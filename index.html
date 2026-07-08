@@ -1,1167 +1,1905 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Consensus Algorithms in Blockchain - A Comparative Explorer</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23141d19'/%3E%3Ccircle cx='16' cy='8' r='3' fill='%23d9721c'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%231f8a5f'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%232f6fb0'/%3E%3Cpath d='M16 8L8 22M16 8L24 22M8 22L24 22' stroke='%23eef1ea' stroke-width='1.2'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --paper:#eef1ea;
-  --surface:#ffffff;
-  --ink:#141d19;
-  --ink-soft:#55645b;
-  --ink-faint:#8b978c;
-  --line:#c9d1c1;
-  --line-soft:#dde3d5;
-  --pow:#d9721c;
-  --pos:#1f8a5f;
-  --dpos:#2f6fb0;
-  --poa:#c23b4f;
-  --bft:#b8891a;
-  --poh:#1a8f9c;
-  --radius:6px;
-  --font-display:'Space Grotesk',sans-serif;
-  --font-body:'IBM Plex Sans',sans-serif;
-  --font-mono:'IBM Plex Mono',monospace;
-}
-*{box-sizing:border-box;}
-html{scroll-behavior:smooth;scrollbar-gutter:stable;}
-body{
-  margin:0;
-  background:var(--paper);
-  background-image:
-    linear-gradient(var(--line-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
-  background-size:34px 34px;
-  color:var(--ink);
-  font-family:var(--font-body);
-  line-height:1.55;
-  -webkit-font-smoothing:antialiased;
-}
-::selection{background:var(--ink);color:var(--paper);}
-a{color:var(--ink);}
-button{font-family:inherit;}
-:focus-visible{outline:2px solid var(--dpos);outline-offset:2px;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consensus Algorithms in Blockchain - A Comparative Explorer</title>
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23141d19'/%3E%3Ccircle cx='16' cy='8' r='3' fill='%23d9721c'/%3E%3Ccircle cx='8' cy='22' r='3' fill='%231f8a5f'/%3E%3Ccircle cx='24' cy='22' r='3' fill='%232f6fb0'/%3E%3Cpath d='M16 8L8 22M16 8L24 22M8 22L24 22' stroke='%23eef1ea' stroke-width='1.2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --paper: #eef1ea;
+      --surface: #ffffff;
+      --ink: #141d19;
+      --ink-soft: #55645b;
+      --ink-faint: #8b978c;
+      --line: #c9d1c1;
+      --line-soft: #dde3d5;
+      --pow: #d9721c;
+      --pos: #1f8a5f;
+      --dpos: #2f6fb0;
+      --poa: #c23b4f;
+      --bft: #b8891a;
+      --poh: #1a8f9c;
+      --radius: 6px;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'IBM Plex Sans', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
 
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+    * {
+      box-sizing: border-box;
+    }
 
-/* ---------- HEADER ---------- */
-.site-head{padding:56px 0 28px;border-bottom:1px solid var(--line);}
-.eyebrow{
-  font-family:var(--font-mono);
-  font-size:.72rem;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  color:var(--ink-soft);
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:18px;
-}
-.eyebrow::before{content:"";width:8px;height:8px;background:var(--pow);border-radius:1px;display:inline-block;}
-h1.title{
-  font-family:var(--font-display);
-  font-weight:700;
-  font-size:clamp(2rem,4.6vw,3.2rem);
-  line-height:1.05;
-  margin:0 0 18px;
-  letter-spacing:-.01em;
-  max-width:16ch;
-}
-.subtitle{
-  font-size:1.06rem;
-  color:var(--ink-soft);
-  max-width:62ch;
-  margin:0;
-}
+    html {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+    }
 
-/* ---------- INTRO ---------- */
-.intro{padding:30px 0;border-bottom:1px solid var(--line);}
-.intro p{max-width:76ch;margin:0 0 12px;color:var(--ink-soft);}
-.intro strong{color:var(--ink);}
-.intro-flag{
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:var(--font-mono);font-size:.78rem;color:var(--ink);
-  margin-top:6px;
-}
-.intro-flag svg{flex:none;}
+    body {
+      margin: 0;
+      background: var(--paper);
+      background-image:
+        linear-gradient(var(--line-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+      background-size: 34px 34px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
 
-/* ---------- ALGO SELECT ---------- */
-.select-label{
-  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--ink-soft);margin:34px 0 12px;
-}
-.chip-row{display:flex;flex-wrap:wrap;gap:10px;padding-bottom:30px;}
-.chip{
-  font-family:var(--font-mono);
-  font-weight:500;
-  font-size:.86rem;
-  background:var(--surface);
-  border:1.5px solid var(--line);
-  color:var(--ink-soft);
-  padding:10px 16px;
-  border-radius:999px;
-  cursor:pointer;
-  display:flex;align-items:center;gap:9px;
-  transition:border-color .15s, color .15s, background .15s, transform .1s;
-}
-.chip:hover{border-color:var(--ink-faint);color:var(--ink);}
-.chip .dot{width:9px;height:9px;border-radius:50%;background:var(--c,var(--ink-faint));flex:none;}
-.chip[aria-pressed="true"]{
-  background:var(--ink);
-  color:var(--paper);
-  border-color:var(--ink);
-}
-.chip[aria-pressed="true"] .dot{background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 35%, transparent);}
-.chip small{opacity:.65;font-weight:400;}
+    ::selection {
+      background: var(--ink);
+      color: var(--paper);
+    }
 
-/* ---------- PANELS ---------- */
-.panel{padding:44px 0;border-bottom:1px solid var(--line);}
-.panel-head{margin-bottom:24px;}
-.panel-kicker{
-  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--c,var(--ink-soft));
-  display:flex;align-items:center;gap:8px;margin-bottom:8px;
-}
-.panel-kicker::before{content:"";width:16px;height:2px;background:var(--c,var(--ink-faint));display:inline-block;}
-.panel-title{font-family:var(--font-display);font-weight:700;font-size:1.55rem;margin:0;}
-.panel-note{color:var(--ink-soft);max-width:74ch;margin:10px 0 0;font-size:.96rem;}
+    a {
+      color: var(--ink);
+    }
 
-.tagline{
-  font-family:var(--font-display);font-weight:600;font-size:1.15rem;
-  color:var(--c,var(--ink));margin:0 0 10px;
-}
-.mechanism-text{max-width:70ch;color:var(--ink-soft);margin:0 0 26px;}
+    button {
+      font-family: inherit;
+    }
 
-/* ---------- STAGE (signature animation) ---------- */
-.stage-grid{display:grid;grid-template-columns:340px 1fr;gap:36px;align-items:start;}
-.stage-box{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  padding:12px;position:relative;
-}
-.stage-box svg{display:block;width:100%;height:auto;}
-.node{transition:r .35s ease, fill .35s ease, fill-opacity .35s ease, stroke .35s ease, opacity .35s;}
-.node.n-ineligible{fill:none;stroke:var(--ink-faint);stroke-width:1.4;fill-opacity:0;opacity:.55;}
-.node.n-eligible{fill:var(--c,var(--ink));fill-opacity:.12;stroke:var(--c,var(--ink));stroke-width:1.6;cursor:pointer;}
-.node.n-eligible:hover{stroke-width:2.6;}
-.node.n-competing{animation:nodePulse 1.1s ease-in-out infinite;}
-.node.n-leader{fill-opacity:1;filter:drop-shadow(0 0 5px color-mix(in srgb, var(--c) 60%, transparent));}
-.node.n-ack{fill-opacity:.9;}
-.node.n-final{fill-opacity:1;}
-.node.n-clock{animation:nodePulse .55s ease-in-out infinite;}
-@keyframes nodePulse{0%,100%{fill-opacity:.14;}50%{fill-opacity:.7;}}
-.core{fill:var(--surface);stroke:var(--ink-faint);stroke-width:1.4;transform-box:fill-box;transform-origin:center;transition:fill .3s ease;}
-.core.core-pulse{animation:corePulse 1s ease-in-out infinite;}
-.core.core-receive{animation:coreReceive .5s ease-in-out infinite;}
-.core.core-append{animation:coreAppend .7s cubic-bezier(.34,1.56,.64,1);}
-@keyframes corePulse{0%,100%{stroke:var(--ink-faint);}50%{stroke:var(--c,var(--ink));}}
-@keyframes coreReceive{0%,100%{stroke-width:1.4;}50%{stroke-width:3.4;stroke:var(--c,var(--ink));}}
-@keyframes coreAppend{0%{transform:scale(1);fill:var(--surface);}35%{transform:scale(1.35);fill:color-mix(in srgb, var(--c) 55%, var(--surface));}100%{transform:scale(1);fill:var(--surface);}}
-.core-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.05em;text-transform:uppercase;fill:var(--ink-faint);text-anchor:middle;pointer-events:none;}
-.core-height{font-family:var(--font-mono);font-size:8px;fill:var(--ink-soft);text-anchor:middle;pointer-events:none;}
-.link-line{stroke:var(--c,var(--ink));stroke-width:1.4;fill:none;transition:stroke-dashoffset .6s ease;}
-.tick{font-family:var(--font-mono);font-size:9px;fill:var(--c,var(--ink));opacity:0;animation:tickIn .35s ease forwards;}
-.you-tag{font-family:var(--font-mono);font-size:9px;font-weight:600;fill:var(--ink);}
-@keyframes tickIn{to{opacity:1;}}
-.stage-caption{
-  font-family:var(--font-mono);font-size:.78rem;color:var(--ink-soft);
-  margin-top:10px;min-height:4.2em;
-}
-.stage-controls{display:flex;gap:8px;margin-top:10px;}
-.stage-btn{
-  font-family:var(--font-mono);font-size:.74rem;background:var(--paper);
-  border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;color:var(--ink);
-}
-.stage-btn:hover{border-color:var(--ink-faint);}
-.stage-hint{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-faint);margin-top:10px;}
-.stage-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-family:var(--font-mono);font-size:.72rem;color:var(--ink-soft);}
-.stage-legend .lg{display:flex;align-items:center;gap:6px;}
-.stage-legend .sw{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none;}
-.sw-idle{border:1.5px solid var(--ink-faint);background:none;}
-.sw-cand{background:var(--ink-faint);opacity:.75;}
-.sw-lead{background:var(--ink);}
-.sw-conf{background:var(--ink);box-shadow:0 0 0 2px var(--paper), 0 0 0 3px var(--ink-faint);}
+    :focus-visible {
+      outline: 2px solid var(--dpos);
+      outline-offset: 2px;
+    }
 
-.steps-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;}
-.step-item{
-  display:flex;gap:14px;align-items:flex-start;
-  padding:12px 14px;border-radius:var(--radius);cursor:pointer;
-  border:1px solid transparent;background:transparent;width:100%;text-align:left;
-  font-family:var(--font-body);color:var(--ink-soft);font-size:.94rem;
-}
-.step-item .num{
-  font-family:var(--font-mono);font-size:.78rem;color:var(--ink-faint);
-  flex:none;width:20px;padding-top:1px;
-}
-.step-item:hover{background:var(--surface);}
-.step-item.active{
-  background:var(--surface);border-color:var(--line);color:var(--ink);
-}
-.step-item.active .num{color:var(--c,var(--ink));font-weight:600;}
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
 
-/* ---------- TRILEMMA ---------- */
-.trilemma-grid{display:grid;grid-template-columns:380px 1fr;gap:40px;align-items:start;}
-.triangle-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;}
-.triangle-box svg{width:100%;height:auto;display:block;}
-.tri-grid-line{stroke:var(--line);stroke-width:1;fill:none;}
-.tri-axis{stroke:var(--line-soft);stroke-width:1;}
-.tri-label{font-family:var(--font-mono);font-size:9.5px;fill:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
-.tri-data{fill-opacity:.22;stroke-width:2.4;transition:d .4s ease;}
-.tri-point{stroke:var(--surface);stroke-width:1.5;}
-.tri-score{font-family:var(--font-mono);font-size:11px;font-weight:600;}
+    /* ---------- HEADER ---------- */
+    .site-head {
+      padding: 56px 0 28px;
+      border-bottom: 1px solid var(--line);
+    }
 
-.score-bars{display:flex;flex-direction:column;gap:18px;margin-bottom:26px;}
-.score-row{}
-.score-row-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
-.score-row-head .label{font-family:var(--font-display);font-weight:600;font-size:.92rem;}
-.score-row-head .val{font-family:var(--font-mono);font-size:.85rem;color:var(--ink-soft);}
-.score-track{height:8px;background:var(--line-soft);border-radius:4px;overflow:hidden;}
-.score-fill{height:100%;background:var(--c,var(--ink));border-radius:4px;transition:width .5s ease;}
-.score-note{font-size:.86rem;color:var(--ink-soft);margin:6px 0 0;}
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
 
-.stat-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
-.stat-tile{
-  background:var(--ink);color:var(--paper);border-radius:var(--radius);
-  padding:14px 14px 12px;
-}
-.stat-tile .n{font-family:var(--font-mono);font-size:1.28rem;font-weight:600;display:block;}
-.stat-tile .l{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65;}
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background: var(--pow);
+      border-radius: 1px;
+      display: inline-block;
+    }
 
-.attack-note{
-  border-left:3px solid var(--c,var(--ink));
-  background:var(--surface);border:1px solid var(--line);border-left-width:3px;
-  border-radius:0 var(--radius) var(--radius) 0;
-  padding:14px 16px;font-size:.92rem;color:var(--ink-soft);
-}
-.attack-note b{color:var(--ink);}
+    h1.title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(2rem, 4.6vw, 3.2rem);
+      line-height: 1.05;
+      margin: 0 0 18px;
+      letter-spacing: -.01em;
+      max-width: 16ch;
+    }
 
-/* ---------- MAPPING ---------- */
-.l1l2-note{
-  font-size:.9rem;color:var(--ink-soft);max-width:74ch;
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  padding:12px 16px;margin-bottom:24px;
-}
-.l1l2-note b{color:var(--ink);}
-.cards-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));
-  gap:14px;margin-bottom:24px;
-}
-.chain-card{
-  background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--c,var(--ink));
-  border-radius:var(--radius);padding:16px;
-}
-.chain-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;}
-.chain-name{font-family:var(--font-display);font-weight:600;font-size:1rem;}
-.chain-ticker{
-  font-family:var(--font-mono);font-size:.72rem;background:var(--paper);
-  border:1px solid var(--line);padding:2px 7px;border-radius:4px;color:var(--ink-soft);white-space:nowrap;
-}
-.badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.badge{
-  font-family:var(--font-mono);font-size:.66rem;letter-spacing:.03em;
-  padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft);
-}
-.badge.layer-l1{background:color-mix(in srgb, var(--c,var(--ink)) 12%, white);border-color:var(--c,var(--line));color:var(--ink);}
-.badge.layer-l2{background:var(--paper);border-style:dashed;color:var(--ink-soft);}
-.chain-why{font-size:.85rem;color:var(--ink-soft);margin:0;}
+    .subtitle {
+      font-size: 1.06rem;
+      color: var(--ink-soft);
+      max-width: 62ch;
+      margin: 0;
+    }
 
-.lang-strip{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  padding:16px 18px;
-}
-.lang-strip-head{font-family:var(--font-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:10px;}
-.lang-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
-.lang-pill{
-  font-family:var(--font-mono);font-size:.78rem;background:var(--c,var(--ink));color:#fff;
-  padding:5px 11px;border-radius:5px;
-}
-.lang-strip p{margin:0;font-size:.88rem;color:var(--ink-soft);}
+    /* ---------- INTRO ---------- */
+    .intro {
+      padding: 30px 0;
+      border-bottom: 1px solid var(--line);
+    }
 
-/* ---------- MATRIX ---------- */
-.matrix-intro{max-width:74ch;color:var(--ink-soft);font-size:.95rem;margin-bottom:22px;}
-.matrix-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px;font-size:.8rem;color:var(--ink-soft);align-items:center;}
-.matrix-legend .lg-item{display:flex;align-items:center;gap:6px;}
-.lg-swatch{width:13px;height:13px;border-radius:3px;display:inline-block;}
-.matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 16px 10px;}
-.matrix-grid{display:inline-grid;grid-auto-rows:24px;gap:2px;}
-.mx-corner{width:132px;}
-.mx-colhead{
-  writing-mode:vertical-rl;transform:rotate(180deg);
-  font-family:var(--font-mono);font-size:9.5px;color:var(--ink-soft);
-  display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;width:24px;
-}
-.mx-rowhead{
-  font-family:var(--font-mono);font-size:10px;color:var(--ink-soft);
-  display:flex;align-items:center;width:132px;padding-right:6px;white-space:nowrap;
-}
-.mx-rowhead b{color:var(--ink);font-weight:600;margin-right:5px;}
-.mx-cell{
-  width:24px;height:24px;border-radius:2px;border:1px solid var(--line-soft);
-  cursor:pointer;transition:opacity .15s, transform .1s;
-}
-.mx-cell:hover{transform:scale(1.18);border-color:var(--ink);position:relative;z-index:2;}
-.mx-cell.self{background:var(--ink);cursor:default;}
-.mx-cell.self:hover{transform:none;}
-.mx-cell.dim{opacity:.32;}
-.mx-cell.group-l{border-left:2px solid var(--ink-faint);}
-.mx-rowhead.group-t, .mx-colhead.group-t{border-top:2px solid var(--ink-faint);padding-top:2px;}
-.readout{
-  margin-top:16px;background:var(--ink);color:var(--paper);border-radius:var(--radius);
-  padding:14px 18px;font-family:var(--font-mono);font-size:.86rem;min-height:1.4em;
-}
-.readout .rk{color:var(--c-a,#fff);}
-.readout .rk2{color:var(--c-b,#fff);}
+    .intro p {
+      max-width: 76ch;
+      margin: 0 0 12px;
+      color: var(--ink-soft);
+    }
 
-/* ---------- FOOTER ---------- */
-.site-foot{padding:36px 0 60px;}
-.foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;font-size:.82rem;color:var(--ink-soft);}
-.foot-grid a{color:var(--ink-soft);}
-.foot-note{max-width:60ch;}
+    .intro strong {
+      color: var(--ink);
+    }
 
-/* ---------- RESPONSIVE ---------- */
-@media (max-width:900px){
-  .stage-grid,.trilemma-grid{grid-template-columns:1fr;}
-  .stat-tiles{grid-template-columns:repeat(3,1fr);}
-}
-@media (max-width:520px){
-  .site-head{padding:40px 0 24px;}
-  .panel{padding:32px 0;}
-  .stat-tiles{grid-template-columns:1fr 1fr;}
-  .stat-tiles .stat-tile:last-child{grid-column:1/-1;}
-}
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:.001s !important;transition-duration:.001s !important;}
-}
-</style>
+    .intro-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--ink);
+      margin-top: 6px;
+    }
+
+    .intro-flag svg {
+      flex: none;
+    }
+
+    /* ---------- ALGO SELECT ---------- */
+    .select-label {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin: 34px 0 12px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 30px;
+    }
+
+    .chip {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: .86rem;
+      background: var(--surface);
+      border: 1.5px solid var(--line);
+      color: var(--ink-soft);
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      transition: border-color .15s, color .15s, background .15s, transform .1s;
+    }
+
+    .chip:hover {
+      border-color: var(--ink-faint);
+      color: var(--ink);
+    }
+
+    .chip .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--c, var(--ink-faint));
+      flex: none;
+    }
+
+    .chip[aria-pressed="true"] {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    .chip[aria-pressed="true"] .dot {
+      background: var(--c);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 35%, transparent);
+    }
+
+    .chip small {
+      opacity: .65;
+      font-weight: 400;
+    }
+
+    /* ---------- PANELS ---------- */
+    .panel {
+      padding: 44px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head {
+      margin-bottom: 24px;
+    }
+
+    .panel-kicker {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--c, var(--ink-soft));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .panel-kicker::before {
+      content: "";
+      width: 16px;
+      height: 2px;
+      background: var(--c, var(--ink-faint));
+      display: inline-block;
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.55rem;
+      margin: 0;
+    }
+
+    .panel-note {
+      color: var(--ink-soft);
+      max-width: 74ch;
+      margin: 10px 0 0;
+      font-size: .96rem;
+    }
+
+    .tagline {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: var(--c, var(--ink));
+      margin: 0 0 10px;
+    }
+
+    .mechanism-text {
+      max-width: 70ch;
+      color: var(--ink-soft);
+      margin: 0 0 26px;
+    }
+
+    /* ---------- STAGE (signature animation) ---------- */
+    .stage-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    .stage-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      position: relative;
+    }
+
+    .stage-box svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .node {
+      transition: r .35s ease, fill .35s ease, fill-opacity .35s ease, stroke .35s ease, opacity .35s;
+    }
+
+    .node.n-ineligible {
+      fill: none;
+      stroke: var(--ink-faint);
+      stroke-width: 1.4;
+      fill-opacity: 0;
+      opacity: .55;
+    }
+
+    .node.n-eligible {
+      fill: var(--c, var(--ink));
+      fill-opacity: .12;
+      stroke: var(--c, var(--ink));
+      stroke-width: 1.6;
+      cursor: pointer;
+    }
+
+    .node.n-eligible:hover {
+      stroke-width: 2.6;
+    }
+
+    .node.n-competing {
+      animation: nodePulse 1.1s ease-in-out infinite;
+    }
+
+    .node.n-leader {
+      fill-opacity: 1;
+      filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 60%, transparent));
+    }
+
+    .node.n-ack {
+      fill-opacity: .9;
+    }
+
+    .node.n-final {
+      fill-opacity: 1;
+    }
+
+    .node.n-clock {
+      animation: nodePulse .55s ease-in-out infinite;
+    }
+
+    @keyframes nodePulse {
+
+      0%,
+      100% {
+        fill-opacity: .14;
+      }
+
+      50% {
+        fill-opacity: .7;
+      }
+    }
+
+    .core {
+      fill: var(--surface);
+      stroke: var(--ink-faint);
+      stroke-width: 1.4;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: fill .3s ease;
+    }
+
+    .core.core-pulse {
+      animation: corePulse 1s ease-in-out infinite;
+    }
+
+    .core.core-receive {
+      animation: coreReceive .5s ease-in-out infinite;
+    }
+
+    .core.core-append {
+      animation: coreAppend .7s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    @keyframes corePulse {
+
+      0%,
+      100% {
+        stroke: var(--ink-faint);
+      }
+
+      50% {
+        stroke: var(--c, var(--ink));
+      }
+    }
+
+    @keyframes coreReceive {
+
+      0%,
+      100% {
+        stroke-width: 1.4;
+      }
+
+      50% {
+        stroke-width: 3.4;
+        stroke: var(--c, var(--ink));
+      }
+    }
+
+    @keyframes coreAppend {
+      0% {
+        transform: scale(1);
+        fill: var(--surface);
+      }
+
+      35% {
+        transform: scale(1.35);
+        fill: color-mix(in srgb, var(--c) 55%, var(--surface));
+      }
+
+      100% {
+        transform: scale(1);
+        fill: var(--surface);
+      }
+    }
+
+    .core-label {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      fill: var(--ink-faint);
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .core-height {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      fill: var(--ink-soft);
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .link-line {
+      stroke: var(--c, var(--ink));
+      stroke-width: 1.4;
+      fill: none;
+      transition: stroke-dashoffset .6s ease;
+    }
+
+    .tick {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      fill: var(--c, var(--ink));
+      opacity: 0;
+      animation: tickIn .35s ease forwards;
+    }
+
+    .you-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      fill: var(--ink);
+    }
+
+    @keyframes tickIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    .stage-caption {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--ink-soft);
+      margin-top: 10px;
+      min-height: 4.2em;
+    }
+
+    .stage-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stage-btn {
+      font-family: var(--font-mono);
+      font-size: .74rem;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 13px;
+      cursor: pointer;
+      color: var(--ink);
+    }
+
+    .stage-btn:hover {
+      border-color: var(--ink-faint);
+    }
+
+    .stage-hint {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--ink-faint);
+      margin-top: 10px;
+    }
+
+    .stage-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--ink-soft);
+    }
+
+    .stage-legend .lg {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stage-legend .sw {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      flex: none;
+    }
+
+    .sw-idle {
+      border: 1.5px solid var(--ink-faint);
+      background: none;
+    }
+
+    .sw-cand {
+      background: var(--ink-faint);
+      opacity: .75;
+    }
+
+    .sw-lead {
+      background: var(--ink);
+    }
+
+    .sw-conf {
+      background: var(--ink);
+      box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ink-faint);
+    }
+
+    .steps-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: var(--font-body);
+      color: var(--ink-soft);
+      font-size: .94rem;
+    }
+
+    .step-item .num {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--ink-faint);
+      flex: none;
+      width: 20px;
+      padding-top: 1px;
+    }
+
+    .step-item:hover {
+      background: var(--surface);
+    }
+
+    .step-item.active {
+      background: var(--surface);
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .step-item.active .num {
+      color: var(--c, var(--ink));
+      font-weight: 600;
+    }
+
+    /* ---------- TRILEMMA ---------- */
+    .trilemma-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .triangle-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .triangle-box svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .tri-grid-line {
+      stroke: var(--line);
+      stroke-width: 1;
+      fill: none;
+    }
+
+    .tri-axis {
+      stroke: var(--line-soft);
+      stroke-width: 1;
+    }
+
+    .tri-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      fill: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .tri-data {
+      fill-opacity: .22;
+      stroke-width: 2.4;
+      transition: d .4s ease;
+    }
+
+    .tri-point {
+      stroke: var(--surface);
+      stroke-width: 1.5;
+    }
+
+    .tri-score {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .score-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .score-row {}
+
+    .score-row-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 5px;
+    }
+
+    .score-row-head .label {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: .92rem;
+    }
+
+    .score-row-head .val {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      color: var(--ink-soft);
+    }
+
+    .score-track {
+      height: 8px;
+      background: var(--line-soft);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      background: var(--c, var(--ink));
+      border-radius: 4px;
+      transition: width .5s ease;
+    }
+
+    .score-note {
+      font-size: .86rem;
+      color: var(--ink-soft);
+      margin: 6px 0 0;
+    }
+
+    .stat-tiles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .stat-tile {
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: var(--radius);
+      padding: 14px 14px 12px;
+    }
+
+    .stat-tile .n {
+      font-family: var(--font-mono);
+      font-size: 1.28rem;
+      font-weight: 600;
+      display: block;
+    }
+
+    .stat-tile .l {
+      font-family: var(--font-mono);
+      font-size: .66rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .65;
+    }
+
+    .attack-note {
+      border-left: 3px solid var(--c, var(--ink));
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left-width: 3px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 16px;
+      font-size: .92rem;
+      color: var(--ink-soft);
+    }
+
+    .attack-note b {
+      color: var(--ink);
+    }
+
+    /* ---------- MAPPING ---------- */
+    .l1l2-note {
+      font-size: .9rem;
+      color: var(--ink-soft);
+      max-width: 74ch;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+    }
+
+    .l1l2-note b {
+      color: var(--ink);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .chain-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--c, var(--ink));
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .chain-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .chain-name {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .chain-ticker {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: .66rem;
+      letter-spacing: .03em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--ink-soft);
+    }
+
+    .badge.layer-l1 {
+      background: color-mix(in srgb, var(--c, var(--ink)) 12%, white);
+      border-color: var(--c, var(--line));
+      color: var(--ink);
+    }
+
+    .badge.layer-l2 {
+      background: var(--paper);
+      border-style: dashed;
+      color: var(--ink-soft);
+    }
+
+    .chain-why {
+      font-size: .85rem;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+
+    .lang-strip {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+
+    .lang-strip-head {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+    }
+
+    .lang-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .lang-pill {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      background: var(--c, var(--ink));
+      color: #fff;
+      padding: 5px 11px;
+      border-radius: 5px;
+    }
+
+    .lang-strip p {
+      margin: 0;
+      font-size: .88rem;
+      color: var(--ink-soft);
+    }
+
+    /* ---------- MATRIX ---------- */
+    .matrix-intro {
+      max-width: 74ch;
+      color: var(--ink-soft);
+      font-size: .95rem;
+      margin-bottom: 22px;
+    }
+
+    .matrix-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+      font-size: .8rem;
+      color: var(--ink-soft);
+      align-items: center;
+    }
+
+    .matrix-legend .lg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lg-swatch {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .matrix-scroll {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 16px 16px 10px;
+    }
+
+    .matrix-grid {
+      display: inline-grid;
+      grid-auto-rows: 54px;
+      gap: 4px;
+    }
+
+    .mx-corner {
+      width: 220px;
+    }
+
+    .mx-colhead {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--ink-soft);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 8px;
+      width: 54px;
+    }
+
+    .mx-rowhead {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--ink-soft);
+      display: flex;
+      align-items: center;
+      width: 220px;
+      padding-right: 12px;
+      white-space: nowrap;
+    }
+
+    .mx-rowhead b {
+      color: var(--ink);
+      font-weight: 600;
+      margin-right: 5px;
+    }
+
+    .mx-cell {
+      width: 54px;
+      height: 54px;
+      border-radius: 4px;
+      border: 1px solid var(--line-soft);
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+
+    .mx-cell:hover {
+      transform: scale(1.18);
+      border-color: var(--ink);
+      position: relative;
+      z-index: 2;
+    }
+
+    .mx-cell.self {
+      background: var(--ink);
+      cursor: default;
+    }
+
+    .mx-cell.self:hover {
+      transform: none;
+    }
+
+    .mx-cell.dim {
+      opacity: .32;
+    }
+
+    .mx-cell.group-l {
+      border-left: 2px solid var(--ink-faint);
+    }
+
+    .mx-rowhead.group-t,
+    .mx-colhead.group-t {
+      border-top: 2px solid var(--ink-faint);
+      padding-top: 2px;
+    }
+
+    .readout {
+      margin-top: 16px;
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-family: var(--font-mono);
+      font-size: .86rem;
+      min-height: 1.4em;
+    }
+
+    .readout .rk {
+      color: var(--c-a, #fff);
+    }
+
+    .readout .rk2 {
+      color: var(--c-b, #fff);
+    }
+
+    /* ---------- FOOTER ---------- */
+    .site-foot {
+      padding: 36px 0 60px;
+    }
+
+    .foot-grid {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: .82rem;
+      color: var(--ink-soft);
+    }
+
+    .foot-grid a {
+      color: var(--ink-soft);
+    }
+
+    .foot-note {
+      max-width: 60ch;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width:900px) {
+
+      .stage-grid,
+      .trilemma-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-tiles {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width:520px) {
+      .site-head {
+        padding: 40px 0 24px;
+      }
+
+      .panel {
+        padding: 32px 0;
+      }
+
+      .stat-tiles {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stat-tiles .stat-tile:last-child {
+        grid-column: 1/-1;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation-duration: .001s !important;
+        transition-duration: .001s !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="wrap">
+  <div class="wrap">
 
-  <header class="site-head">
-    <div class="eyebrow">Protocol comparison · live explorer</div>
-    <h1 class="title">Consensus Algorithms in Blockchain</h1>
-    <p class="subtitle">Every blockchain has to solve the same problem: get thousands of strangers to agree on one shared history, with no referee in charge. Select a mechanism below to see exactly how it works, what it trades away, and which real networks actually run on it.</p>
-  </header>
+    <header class="site-head">
+      <div class="eyebrow">Protocol comparison · live explorer</div>
+      <h1 class="title">Consensus Algorithms in Blockchain</h1>
+      <p class="subtitle">Every blockchain has to solve the same problem: get thousands of strangers to agree on one
+        shared history, with no referee in charge. Select a mechanism below to see exactly how it works, what it trades
+        away, and which real networks actually run on it.</p>
+    </header>
 
-  <section class="intro">
-    <p>Distributed-systems researchers describe blockchain design as a <strong>trilemma</strong>: a network can push hard on <strong>Scalability</strong> (how much it can process), <strong>Security</strong> (how expensive it is to attack) and <strong>Decentralisation</strong> (how many independent parties keep it honest) - but optimising two usually pulls against the third. Every consensus mechanism below is really just a different, deliberate answer to that trade-off.</p>
-    <p>Six mechanisms are compared here - the ones that actually secure the blockchains and cryptocurrencies in circulation today. Pick one to update the mechanism, trilemma scores, real-world chains, and language notes below. The compatibility matrix near the bottom stays visible for all six at once.</p>
-  </section>
+    <section class="intro">
+      <p>Distributed-systems researchers describe blockchain design as a <strong>trilemma</strong>: a network can push
+        hard on <strong>Scalability</strong> (how much it can process), <strong>Security</strong> (how expensive it is
+        to attack) and <strong>Decentralisation</strong> (how many independent parties keep it honest) - but optimising
+        two usually pulls against the third. Every consensus mechanism below is really just a different, deliberate
+        answer to that trade-off.</p>
+      <p>Six mechanisms are compared here - the ones that actually secure the blockchains and cryptocurrencies in
+        circulation today. Pick one to update the mechanism, trilemma scores, real-world chains, and language notes
+        below. The compatibility matrix near the bottom stays visible for all six at once.</p>
+    </section>
 
-  <div class="select-label">Select a consensus mechanism</div>
-  <nav class="chip-row" id="chipRow" aria-label="Choose a consensus algorithm"></nav>
+    <div class="select-label">Select a consensus mechanism</div>
+    <nav class="chip-row" id="chipRow" aria-label="Choose a consensus algorithm"></nav>
 
-  <!-- MECHANISM / STAGE -->
-  <section class="panel" id="panelMechanism">
-    <div class="panel-head">
-      <div class="panel-kicker">Mechanism</div>
-      <h2 class="panel-title">How consensus is reached</h2>
-    </div>
-    <p class="tagline" id="tagline"></p>
-    <p class="mechanism-text" id="mechanismText"></p>
+    <!-- MECHANISM / STAGE -->
+    <section class="panel" id="panelMechanism">
+      <div class="panel-head">
+        <div class="panel-kicker">Mechanism</div>
+        <h2 class="panel-title">How consensus is reached</h2>
+      </div>
+      <p class="tagline" id="tagline"></p>
+      <p class="mechanism-text" id="mechanismText"></p>
 
-    <div class="stage-grid">
-      <div>
-        <div class="stage-box">
-          <svg id="stageSvg" viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <g id="linesGroup"></g>
-            <circle id="coreEl" class="core" cx="170" cy="150" r="15"></circle>
-            <text class="core-label" x="170" y="153">ledger</text>
-            <text class="core-height" id="coreHeight" x="170" y="176">height 0</text>
-            <g id="nodesGroup"></g>
-            <g id="ticksGroup"></g>
-          </svg>
+      <div class="stage-grid">
+        <div>
+          <div class="stage-box">
+            <svg id="stageSvg" viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <g id="linesGroup"></g>
+              <circle id="coreEl" class="core" cx="170" cy="150" r="15"></circle>
+              <text class="core-label" x="170" y="153">ledger</text>
+              <text class="core-height" id="coreHeight" x="170" y="176">height 0</text>
+              <g id="nodesGroup"></g>
+              <g id="ticksGroup"></g>
+            </svg>
+          </div>
+          <div class="stage-caption" id="stageCaption"></div>
+          <div class="stage-controls">
+            <button class="stage-btn" id="prevBtn" type="button">← Back</button>
+            <button class="stage-btn" id="nextBtn" type="button">Next →</button>
+            <button class="stage-btn" id="replayBtn" type="button">↻ Restart round</button>
+          </div>
+          <p class="stage-hint"></p>
         </div>
-        <div class="stage-caption" id="stageCaption"></div>
-        <div class="stage-controls">
-          <button class="stage-btn" id="prevBtn" type="button">← Back</button>
-          <button class="stage-btn" id="nextBtn" type="button">Next →</button>
-          <button class="stage-btn" id="replayBtn" type="button">↻ Restart round</button>
+        <ol class="steps-list" id="stepsList" style="list-style:none;"></ol>
+      </div>
+    </section>
+
+    <!-- TRILEMMA -->
+    <section class="panel" id="panelTrilemma">
+      <div class="panel-head">
+        <div class="panel-kicker">Trade-offs</div>
+        <h2 class="panel-title">Balancing the trilemma</h2>
+        <p class="panel-note">Each axis is scored 0–10. The filled triangle shows this mechanism's shape - a big, even
+          triangle would mean "wins at everything," which is exactly what the trilemma says shouldn't be possible.</p>
+      </div>
+      <div class="trilemma-grid">
+        <div class="triangle-box">
+          <svg id="triSvg" viewBox="0 0 460 370" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
-        <p class="stage-hint"></p>
+        <div>
+          <div class="score-bars" id="scoreBars"></div>
+          <div class="stat-tiles" id="statTiles"></div>
+          <div class="attack-note" id="attackNote"></div>
+        </div>
       </div>
-      <ol class="steps-list" id="stepsList" style="list-style:none;"></ol>
-    </div>
-  </section>
+    </section>
 
-  <!-- TRILEMMA -->
-  <section class="panel" id="panelTrilemma">
-    <div class="panel-head">
-      <div class="panel-kicker">Trade-offs</div>
-      <h2 class="panel-title">Balancing the trilemma</h2>
-      <p class="panel-note">Each axis is scored 0–10. The filled triangle shows this mechanism's shape - a big, even triangle would mean "wins at everything," which is exactly what the trilemma says shouldn't be possible.</p>
-    </div>
-    <div class="trilemma-grid">
-      <div class="triangle-box">
-        <svg id="triSvg" viewBox="0 0 460 370" xmlns="http://www.w3.org/2000/svg"></svg>
+    <!-- MAPPING -->
+    <section class="panel" id="panelMapping">
+      <div class="panel-head">
+        <div class="panel-kicker">Adoption</div>
+        <h2 class="panel-title">Where it's actually used</h2>
       </div>
-      <div>
-        <div class="score-bars" id="scoreBars"></div>
-        <div class="stat-tiles" id="statTiles"></div>
-        <div class="attack-note" id="attackNote"></div>
+      <div class="l1l2-note"><b>Layer 1</b> = a base chain that runs its own consensus from scratch. <b>Layer 2</b> = a
+        scaling layer built on top of a Layer 1, batching activity off-chain and settling proofs or checkpoints back to
+        it - inheriting the base chain's security without re-running its own consensus process.</div>
+      <div class="cards-grid" id="cardsGrid"></div>
+      <div class="lang-strip">
+        <div class="lang-strip-head">Smart contract languages tied to this consensus</div>
+        <div class="lang-pills" id="langPills"></div>
+        <p id="langNote"></p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- MAPPING -->
-  <section class="panel" id="panelMapping">
-    <div class="panel-head">
-      <div class="panel-kicker">Adoption</div>
-      <h2 class="panel-title">Where it's actually used</h2>
-    </div>
-    <div class="l1l2-note"><b>Layer 1</b> = a base chain that runs its own consensus from scratch. <b>Layer 2</b> = a scaling layer built on top of a Layer 1, batching activity off-chain and settling proofs or checkpoints back to it - inheriting the base chain's security without re-running its own consensus process.</div>
-    <div class="cards-grid" id="cardsGrid"></div>
-    <div class="lang-strip">
-      <div class="lang-strip-head">Smart contract languages tied to this consensus</div>
-      <div class="lang-pills" id="langPills"></div>
-      <p id="langNote"></p>
-    </div>
-  </section>
-
-  <!-- MATRIX -->
-  <section class="panel" id="panelMatrix">
-    <div class="panel-head">
-      <div class="panel-kicker">Interoperability</div>
-      <h2 class="panel-title">Cross-chain compatibility matrix</h2>
-    </div>
-    <p class="matrix-intro">Two blockchains are protocol-level <b>compatible</b> here if they run the <em>same</em> consensus family - e.g. Ethereum and Cardano are both Proof of Stake. That doesn't mean assets move between them for free, but it does mean similar finality guarantees, validator economics, and tooling assumptions. Bitcoin and Solana, by contrast, share nothing at the consensus layer - a bridge or wrapped asset is always required. Click any cell for the read-out.</p>
-    <div class="matrix-legend" id="matrixLegend"></div>
-    <div class="matrix-scroll">
-      <div class="matrix-grid" id="matrixGrid"></div>
-    </div>
-    <div class="readout" id="readout" aria-live="polite">Hover or tap a cell above to compare two chains at the protocol level.</div>
-  </section>
+    <!-- MATRIX -->
+    <section class="panel" id="panelMatrix">
+      <div class="panel-head">
+        <div class="panel-kicker">Interoperability</div>
+        <h2 class="panel-title">Cross-chain compatibility matrix</h2>
+      </div>
+      <p class="matrix-intro">Two blockchains are protocol-level <b>compatible</b> here if they run the <em>same</em>
+        consensus family - e.g. Ethereum and Cardano are both Proof of Stake. That doesn't mean assets move between them
+        for free, but it does mean similar finality guarantees, validator economics, and tooling assumptions. Bitcoin
+        and Solana, by contrast, share nothing at the consensus layer - a bridge or wrapped asset is always required.
+        Click any cell for the read-out.</p>
+      <div class="matrix-legend" id="matrixLegend"></div>
+      <div class="matrix-scroll">
+        <div class="matrix-grid" id="matrixGrid"></div>
+      </div>
+      <div class="readout" id="readout" aria-live="polite">Hover or tap a cell above to compare two chains at the
+        protocol level.</div>
+    </section>
 
 
-</div>
+  </div>
 
-<script>
-(function(){
-"use strict";
+  <script>
+    (function () {
+      "use strict";
 
-const COLORS = {pow:'#d9721c', pos:'#1f8a5f', dpos:'#2f6fb0', poa:'#c23b4f', bft:'#b8891a', poh:'#1a8f9c'};
+      const COLORS = { pow: '#d9721c', pos: '#1f8a5f', dpos: '#2f6fb0', poa: '#c23b4f', bft: '#b8891a', poh: '#1a8f9c' };
 
-const ALGOS = {
-  pow:{
-    key:'pow', name:'Proof of Work', short:'PoW', tagline:'Security through spent energy',
-    mechanism:"Miners race to solve a computationally expensive puzzle - finding a number (a nonce) that, hashed together with the block's data, produces an output below a target value. There is no shortcut: the only way to find it is brute-force guessing. Whoever finds it first earns the right to publish the next block, and every other node can verify the answer instantly.",
-    steps:[
-      {t:"A candidate block is assembled from pending transactions and a fresh header.", leader:'none', frac:0, finalize:false},
-      {t:"Miners insert a nonce into the header and compute a SHA-256 hash of the result.", leader:'race', frac:0, finalize:false},
-      {t:"Almost every hash misses the difficulty target, so miners increment the nonce and hash again - billions of times per second.", leader:'race', frac:0, finalize:false},
-      {t:"One miner's hash finally lands below the target - a valid Proof of Work has been found.", leader:'single', frac:0, finalize:false},
-      {t:"The winning miner immediately broadcasts the solved block to its nearest peers.", leader:'single', frac:0.4, finalize:false},
-      {t:"The block propagates outward across the peer-to-peer network, hop by hop.", leader:'single', frac:0.8, finalize:false},
-      {t:"Every node re-runs the hash and re-checks every transaction to confirm the proof is genuine.", leader:'single', frac:1, finalize:false},
-      {t:"The block is appended to the chain; miners drop any competing block and build on this one.", leader:'single', frac:1, finalize:true}
-    ],
-    scores:{scalability:2, security:10, decentralization:8},
-    scoreNotes:{
-      scalability:"Blocks arrive slowly (minutes) and most energy goes into competition, not into processing more transactions.",
-      security:"Rewriting history means outrunning the entire honest network's hashing power - the costliest 51% attack of any mechanism at scale.",
-      decentralization:"Anyone with hardware can mine, though industrial ASIC farms have concentrated real-world participation."
-    },
-    stats:{blockTime:'~10 min', tps:'~7 TPS', finality:'~60 min'},
-    attack:"A 51% attack requires out-hashing the rest of the planet's miners combined - for large chains this would cost billions in hardware and electricity, making it economically irrational rather than merely difficult. Sybil resistance comes from the fact that identities are worthless here; only real computational work counts.",
-    languages:['Script','Solidity'],
-    languageNote:"Bitcoin's own Script is deliberately not Turing-complete - a security choice to keep validation predictable. Ethereum Classic kept Ethereum's original Solidity, since it forked away before the switch to Proof of Stake.",
-    chains:[
-      {name:'Bitcoin', ticker:'BTC', layer:'L1', language:'Script', why:"Values maximal security and censorship-resistance over raw speed - PoW's brute-force cost is the point, not a flaw."},
-      {name:'Litecoin', ticker:'LTC', layer:'L1', language:'Script', why:"Uses Scrypt hashing for faster ~2.5 min blocks while keeping PoW's proven security model."},
-      {name:'Dogecoin', ticker:'DOGE', layer:'L1', language:'Script', why:"Merge-mined alongside Litecoin, inheriting a large, established hash-power pool cheaply."},
-      {name:'Ethereum Classic', ticker:'ETC', layer:'L1', language:'Solidity', why:"Continued Ethereum's original PoW chain after the 2016 fork, prioritising immutability over migration."},
-      {name:'Monero', ticker:'XMR', layer:'L1', language:'-', why:"ASIC-resistant RandomX keeps mining accessible to ordinary CPUs, spreading out participation."},
-      {name:'Lightning Network', ticker:'LN', layer:'L2', language:'-', why:"Moves everyday payments into off-chain channels, settling only opening/closing balances on Bitcoin's PoW base layer."}
-    ],
-    stage:{eligible:[0,1,2,3,4,5,6,7,8], shape:'circle', leader:0, rotate:true, sync:false, clock:false, durations:[1000,3200,1000,1500,1900]}
-  },
-  pos:{
-    key:'pos', name:'Proof of Stake', short:'PoS', tagline:'Security through locked capital',
-    mechanism:"Validators lock up native coins as collateral instead of burning electricity. The protocol pseudo-randomly picks a proposer for each block - weighted by how much is staked - while a rotating committee of other validators attests to the block's validity. Provable misbehaviour costs a validator a slice of their stake.",
-    steps:[
-      {t:"Validators lock up a minimum stake of the network's native token as collateral.", leader:'none', frac:0, finalize:false},
-      {t:"A verifiable random function, weighted by stake size, begins selecting this slot's proposer.", leader:'race', frac:0, finalize:false},
-      {t:"The VRF output is revealed - one validator is now the proposer for this slot.", leader:'single', frac:0, finalize:false},
-      {t:"The proposer assembles pending transactions into a block and broadcasts it.", leader:'single', frac:0.3, finalize:false},
-      {t:"A randomly-sampled attestation committee starts voting on the block's validity.", leader:'single', frac:0.55, finalize:false},
-      {t:"Attestations keep arriving; the vote tally climbs toward a two-thirds majority.", leader:'single', frac:0.8, finalize:false},
-      {t:"Two-thirds of staked weight has attested - the block is finalized.", leader:'single', frac:1, finalize:true},
-      {t:"Any validator later proven to have equivocated has part of its stake slashed.", leader:'single', frac:1, finalize:true}
-    ],
-    scores:{scalability:6, security:8, decentralization:7},
-    scoreNotes:{
-      scalability:"No puzzle-solving wasted on competition means shorter, more predictable block times than PoW.",
-      security:"Attacking the chain means acquiring and risking a majority of all staked value - the attacker's own capital is destroyed if caught.",
-      decentralization:"Staking has a far lower entry cost than mining hardware, though large staking pools and exchanges can concentrate voting power."
-    },
-    stats:{blockTime:'~12 sec', tps:'~15–100 TPS', finality:'~13–15 min'},
-    attack:"A 51% attack requires controlling the majority of all staked coins - on a large network that means buying a huge share of the circulating supply (driving its price up) and then destroying its own value through slashing once caught. Sybil resistance comes from stake being expensive and finite, not from identity checks.",
-    languages:['Solidity','Vyper','Plutus (Haskell)','Rust'],
-    languageNote:"Most PoS smart-contract platforms lean on the EVM and Solidity for tooling compatibility, while newer designs - Cardano's Plutus, Polkadot's ink! - trade that compatibility for stronger formal-verification or performance guarantees.",
-    chains:[
-      {name:'Ethereum', ticker:'ETH', layer:'L1', language:'Solidity, Vyper', why:"Moved from PoW to PoS in 'The Merge' to cut energy use by roughly 99.9% without changing its execution layer."},
-      {name:'Cardano', ticker:'ADA', layer:'L1', language:'Plutus (Haskell)', why:"Ouroboros PoS was built from peer-reviewed research for mathematically provable security guarantees."},
-      {name:'Polkadot', ticker:'DOT', layer:'L1', language:'Rust (ink!)', why:"Nominated PoS secures a relay chain that coordinates many interoperable parachains."},
-      {name:'Avalanche', ticker:'AVAX', layer:'L1', language:'Solidity', why:"A PoS-based consensus protocol gives sub-second finality across many parallel subnets."},
-      {name:'NEAR Protocol', ticker:'NEAR', layer:'L1', language:'Rust, JavaScript', why:"PoS combined with sharding (Nightshade) splits validation work across the network to scale throughput."},
-      {name:'Arbitrum One', ticker:'ARB', layer:'L2', language:'Solidity', why:"An Optimistic Rollup that executes transactions off-chain and posts proofs back to Ethereum, inheriting its PoS security."},
-      {name:'Polygon PoS', ticker:'POL', layer:'L2', language:'Solidity', why:"Runs its own fast PoS checkpoint chain while periodically committing state back to Ethereum for extra security."}
-    ],
-    stage:{eligible:[0,1,2,3,4,5,6,7,8], shape:'circle', leader:4, rotate:false, sync:false, clock:false,
-      weights:[0.3,0.6,0.9,0.4,1,0.5,0.7,0.35,0.55], durations:[1000,1600,1000,1500,1700]}
-  },
-  dpos:{
-    key:'dpos', name:'Delegated Proof of Stake', short:'DPoS', tagline:'Security through elected accountability',
-    mechanism:"Token holders vote for a small number of delegates - often called block producers or witnesses - using their holdings as voting weight. Only the top vote-getters get to produce blocks, taking turns in a fixed rotation, and can be voted out at any time if they misbehave or under-perform.",
-    steps:[
-      {t:"Token holders cast approval votes for delegate candidates, weighted by their holdings.", leader:'none', frac:0, finalize:false},
-      {t:"Vote tallies are counted; the top vote-getters (often a fixed number, like 21) become active producers.", leader:'race', frac:0, finalize:false},
-      {t:"Producers are locked into a round-robin production schedule.", leader:'race', frac:0, finalize:false},
-      {t:"The scheduled producer for this slot builds the next block.", leader:'single', frac:0, finalize:false},
-      {t:"The block is broadcast to the small, known set of fellow producers.", leader:'single', frac:0.6, finalize:false},
-      {t:"Producers confirm it almost instantly - overhead is minimal with such a small, known validator set.", leader:'single', frac:1, finalize:false},
-      {t:"The block is finalized; any producer that misses its slot or misbehaves can be voted out immediately.", leader:'single', frac:1, finalize:true}
-    ],
-    scores:{scalability:9, security:5, decentralization:3},
-    scoreNotes:{
-      scalability:"A tiny, known set of producers can coordinate almost instantly, enabling very fast, high-throughput blocks.",
-      security:"Fewer block producers means fewer parties would need to collude to censor or reorganise the chain.",
-      decentralization:"Real influence concentrates in whoever wins the popularity or capital contest for the small number of producer seats."
-    },
-    stats:{blockTime:'~0.5–3 sec', tps:'1k–4k+ TPS', finality:'~1–2 min'},
-    attack:"A 51% attack here means colluding with a majority of the small elected producer set - harder to do covertly since producers are publicly identified, but easier to coordinate than convincing millions of anonymous miners or validators. Voter apathy is the main real-world risk: if few people vote, a small group can capture most producer seats.",
-    languages:['C++','Solidity'],
-    languageNote:"EOS and Hive use custom C++ toolchains built around their producer-scheduled architecture, while TRON adopted an EVM-compatible virtual machine so Solidity developers could deploy with little modification.",
-    chains:[
-      {name:'EOS', ticker:'EOS', layer:'L1', language:'C++ (WASM)', why:"A 21-producer model was chosen explicitly to maximise throughput for consumer-scale applications."},
-      {name:'TRON', ticker:'TRX', layer:'L1', language:'Solidity (TVM)', why:"27 Super Representatives enable high TPS and low fees for content and payment dApps."},
-      {name:'Hive', ticker:'HIVE', layer:'L1', language:'C++ (custom)', why:"Fast, feeless block production suits high-frequency social content voting and rewards."}
-    ],
-    stage:{eligible:[0,2,4,6], shape:'circle', leader:0, rotate:true, sync:false, clock:false, durations:[900,1100,900,1200,1200]}
-  },
-  poa:{
-    key:'poa', name:'Proof of Authority', short:'PoA', tagline:'Security through verified identity',
-    mechanism:"A small, pre-approved set of validators - vetted by real-world identity or reputation - take turns signing blocks. There's no mining or staking; trust comes from knowing exactly who is allowed to produce blocks, and knowing they have something to lose (reputation, a legal contract) if they cheat.",
-    steps:[
-      {t:"A fixed list of pre-approved validators (sealers) is already known to every node.", leader:'none', frac:0, finalize:false},
-      {t:"The next sealer in the round-robin rotation is determined by the slot number.", leader:'race', frac:0, finalize:false},
-      {t:"That sealer assembles a block and signs it with its private key.", leader:'single', frac:0, finalize:false},
-      {t:"The signed block is broadcast to the rest of the authority set.", leader:'single', frac:0.6, finalize:false},
-      {t:"Peers check the signature against the known list of approved public keys.", leader:'single', frac:1, finalize:false},
-      {t:"The signature checks out - no puzzle-solving or stake required, only a valid identity.", leader:'single', frac:1, finalize:false},
-      {t:"The block is appended; a sealer caught signing conflicting blocks can be removed by governance.", leader:'single', frac:1, finalize:true}
-    ],
-    scores:{scalability:8, security:5, decentralization:2},
-    scoreNotes:{
-      scalability:"A small fixed set of trusted signers needs almost no coordination overhead, so blocks arrive quickly and predictably.",
-      security:"Resilient to anonymous attacks since every validator is identifiable, but the whole system trusts that small group not to collude.",
-      decentralization:"Only a handful of pre-approved parties can ever produce blocks - closer to a permissioned network than an open one."
-    },
-    stats:{blockTime:'~3–5 sec', tps:'hundreds–1k+ TPS', finality:'~10–15 sec'},
-    attack:"Sybil resistance here comes entirely from vetting - you can't simply spin up new identities to gain influence. A 51% attack would mean a majority of the known, named validators colluding, technically easier than in open networks but carrying real reputational and legal consequences for identifiable operators.",
-    languages:['Solidity'],
-    languageNote:"PoA and PoA-hybrid chains overwhelmingly stay EVM-compatible so they can reuse Ethereum's Solidity tooling, wallets, and developer base while trading decentralisation for speed.",
-    chains:[
-      {name:'VeChain', ticker:'VET', layer:'L1', language:'Solidity', why:"Supply-chain tracking needs fast, predictable, low-cost blocks from a small set of authorised nodes."},
-      {name:'BNB Smart Chain', ticker:'BNB', layer:'L1', language:'Solidity', why:"A Proof of Staked Authority hybrid trades some decentralisation for EVM-level speed and low fees."}
-    ],
-    stage:{eligible:[0,3,6], shape:'square', leader:0, rotate:true, sync:false, clock:false, durations:[700,800,700,1000,1000]}
-  },
-  bft:{
-    key:'bft', name:'Byzantine Fault Tolerant (BFT)', short:'BFT', tagline:'Security through supermajority agreement',
-    mechanism:"A known set of validators proposes and votes on blocks in explicit rounds. Once more than two-thirds of voting power agrees across two successive voting phases, the block is instantly and irreversibly final - the network keeps working even if up to one-third of validators go offline or act maliciously.",
-    steps:[
-      {t:"A proposer for this round is chosen round-robin, weighted by voting power.", leader:'single', frac:0, finalize:false},
-      {t:"The proposer broadcasts a candidate block to every validator.", leader:'single', frac:0.4, finalize:false},
-      {t:"Validators broadcast a Pre-vote signalling they consider the block valid.", leader:'single', frac:0.65, finalize:false},
-      {t:"Over two-thirds of voting power Pre-votes the same block - a Pre-vote quorum locks in.", leader:'single', frac:0.8, finalize:false},
-      {t:"Validators now broadcast a Pre-commit for that same block.", leader:'single', frac:0.9, finalize:false},
-      {t:"Two-thirds Pre-commit - the block reaches instant, irreversible finality.", leader:'single', frac:1, finalize:true},
-      {t:"If no quorum forms before the round times out, this round is simply abandoned...", leader:'single', frac:1, finalize:true},
-      {t:"A new proposer is chosen for the next round, keeping the network live.", leader:'single', frac:1, finalize:true}
-    ],
-    scores:{scalability:7, security:7, decentralization:5},
-    scoreNotes:{
-      scalability:"Instant finality and a known validator set let blocks confirm in a few seconds with nothing 'stacking up' afterwards.",
-      security:"Mathematically tolerant of up to one-third malicious validators, with no forking possible once a block is final.",
-      decentralization:"Validator sets are usually capped at a size the voting protocol can coordinate quickly, limiting how open participation can be."
-    },
-    stats:{blockTime:'~1–6 sec', tps:'1k–10k+ TPS', finality:'Instant'},
-    attack:"A 51% attack doesn't even apply the same way here - a coalition needs over two-thirds of voting power to break liveness or safety, and getting caught means visible, slashable equivocation. Because the validator set is known in advance, Sybil resistance depends on how validators are admitted, not on the voting algorithm itself.",
-    languages:['Go','Rust','Java','Node.js','Hooks (C)'],
-    languageNote:"BFT chains split by audience: public networks like Cosmos lean on Go and Rust (CosmWasm) for app-chain tooling, while permissioned platforms like Hyperledger Fabric let enterprises write contracts in general-purpose languages their teams already know.",
-    chains:[
-      {name:'Cosmos Hub', ticker:'ATOM', layer:'L1', language:'Go, Rust (CosmWasm)', why:"Tendermint BFT's instant finality underpins the Inter-Blockchain Communication protocol linking dozens of app-chains."},
-      {name:'Hyperledger Fabric', ticker:'-', layer:'L1', language:'Go, Java, Node.js', why:"Enterprise consortiums need instant, non-forking finality for auditable business processes."},
-      {name:'XRP Ledger', ticker:'XRP', layer:'L1', language:'Hooks (C)', why:"A federated BFT variant gives 3–5 second final settlement suited to cross-border payments."}
-    ],
-    stage:{eligible:[0,1,2,3,4,5,6], shape:'circle', leader:0, rotate:false, sync:true, clock:false, durations:[900,1400,900,1300,1600]}
-  },
-  poh:{
-    key:'poh', name:'Proof of History (+ Proof of Stake)', short:'PoH', tagline:'Security through a verifiable clock',
-    mechanism:"A rotating leader continuously hashes its own output to build a verifiable, tamper-evident sequence that acts as a cryptographic clock. Transactions are stamped into this sequence as they arrive, so validators can agree on ordering and timing without constantly messaging each other - stake-weighted voting (Tower BFT) is layered on top to finalize state.",
-    steps:[
-      {t:"The current leader continuously hashes its own previous output, one tick after another.", leader:'single', frac:0, finalize:false},
-      {t:"Each hash tick is timestamped, building an unbroken, verifiable sequence - a cryptographic clock.", leader:'single', frac:0, finalize:false},
-      {t:"Incoming transactions are inserted into the sequence, fixing their exact position in time.", leader:'single', frac:0.3, finalize:false},
-      {t:"The leader streams the ordered ticks and transactions to every validator as they're produced.", leader:'single', frac:0.6, finalize:false},
-      {t:"Validators replay the hash chain locally - anyone can verify the ordering without asking the leader.", leader:'single', frac:0.85, finalize:false},
-      {t:"Tower BFT collects stake-weighted votes on this same sequence, using it as a trusted clock.", leader:'single', frac:1, finalize:false},
-      {t:"Enough stake-weighted votes land - the state confirmed by this slot is locked in.", leader:'single', frac:1, finalize:true},
-      {t:"The leader schedule rotates to the next validator for the following slot.", leader:'single', frac:1, finalize:true}
-    ],
-    scores:{scalability:10, security:6, decentralization:4},
-    scoreNotes:{
-      scalability:"Removing the need to agree on time before agreeing on order lets the network process an extremely high transaction volume.",
-      security:"Inherits Proof of Stake's economic security for voting, but a single leader per slot is a temporary point of concentrated trust.",
-      decentralization:"Running a competitive validator requires serious hardware to keep pace with the PoH clock, raising the real-world bar to participate."
-    },
-    stats:{blockTime:'~0.4 sec', tps:'up to 65k TPS', finality:'~12–13 sec'},
-    attack:"Because voting is stake-weighted, a 51% attack still means acquiring a majority of staked value, same as plain PoS. The risk PoH adds is operational, not cryptographic: if the current leader stalls or drops offline, block production for that slot pauses until the schedule rotates to the next one.",
-    languages:['Rust','C','C++'],
-    languageNote:"Solana's validator client and on-chain programs are written in performance-critical languages - Rust, C, C++ - needed to keep up with its sub-second block cadence.",
-    chains:[
-      {name:'Solana', ticker:'SOL', layer:'L1', language:'Rust, C, C++', why:"PoH's built-in clock removes most validator-to-validator messaging, enabling extremely high throughput for latency-sensitive apps."}
-    ],
-    stage:{eligible:[0,1,2,3,4,5,6,7,8], shape:'circle', leader:4, rotate:false, sync:false, clock:true, durations:[500,650,500,800,900]}
-  }
-};
-
-const ORDER = ['pow','pos','dpos','poa','bft','poh'];
-const svgNS = 'http://www.w3.org/2000/svg';
-
-/* ---------------- flatten chains for matrix ---------------- */
-const ALL_CHAINS = [];
-ORDER.forEach(k=>{
-  ALGOS[k].chains.forEach(c=>{
-    ALL_CHAINS.push(Object.assign({}, c, {algoKey:k, algoShort:ALGOS[k].short, algoName:ALGOS[k].name}));
-  });
-});
-const GROUP_SIZES = ORDER.map(k=>ALGOS[k].chains.length);
-const GROUP_START_IDX = [];
-{ let acc=0; ORDER.forEach((k,i)=>{ if(i>0) GROUP_START_IDX.push(acc); acc+=GROUP_SIZES[i]; }); }
-
-/* ---------------- state ---------------- */
-const state = { selected:'pow', phase:0, round:0, currentLeader:0, userPick:null, height:0, lastHeightRound:-1 };
-
-function hexToRgba(hex, a){
-  const h = hex.replace('#','');
-  const r=parseInt(h.substring(0,2),16), g=parseInt(h.substring(2,4),16), b=parseInt(h.substring(4,6),16);
-  return 'rgba('+r+','+g+','+b+','+a+')';
-}
-
-/* ---------------- chips ---------------- */
-function buildChips(){
-  const row = document.getElementById('chipRow');
-  row.innerHTML='';
-  ORDER.forEach(k=>{
-    const a = ALGOS[k];
-    const btn = document.createElement('button');
-    btn.className='chip';
-    btn.type='button';
-    btn.style.setProperty('--c', COLORS[k]);
-    btn.setAttribute('aria-pressed', k===state.selected ? 'true':'false');
-    btn.innerHTML = '<span class="dot"></span>'+a.short+' <small>'+a.name.replace(a.short,'').replace(/[()]/g,'').trim().split(' ').slice(0,0).join('')+'</small>';
-    btn.querySelector('small').textContent = a.name;
-    btn.addEventListener('click', ()=>selectAlgo(k));
-    row.appendChild(btn);
-  });
-}
-function updateChips(){
-  document.querySelectorAll('#chipRow .chip').forEach((el,i)=>{
-    el.setAttribute('aria-pressed', ORDER[i]===state.selected ? 'true':'false');
-  });
-}
-
-/* ---------------- overview text ---------------- */
-function updateOverview(){
-  const a = ALGOS[state.selected];
-  document.getElementById('tagline').textContent = a.tagline;
-  document.getElementById('tagline').style.setProperty('--c', COLORS[a.key]);
-  document.getElementById('mechanismText').textContent = a.mechanism;
-
-  const list = document.getElementById('stepsList');
-  list.innerHTML='';
-  a.steps.forEach((s,i)=>{
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.className='step-item'+(i===state.phase?' active':'');
-    btn.type='button';
-    btn.style.setProperty('--c', COLORS[a.key]);
-    btn.innerHTML = '<span class="num">0'+(i+1)+'</span><span>'+s.t+'</span>';
-    btn.addEventListener('click', ()=>{ setPhase(i); });
-    li.appendChild(btn);
-    list.appendChild(li);
-  });
-}
-function highlightStep(){
-  document.querySelectorAll('.step-item').forEach((el,i)=>{
-    el.classList.toggle('active', i===state.phase);
-  });
-}
-
-/* ---------------- stage (network animation) ---------------- */
-function nodePos(i){
-  const angle = (-90 + i*40) * Math.PI/180;
-  return { x: 170 + 108*Math.cos(angle), y: 155 + 108*Math.sin(angle) };
-}
-let stageEls = [];
-function onNodeClick(i){
-  const a = ALGOS[state.selected];
-  const cfg = a.stage;
-  if(!cfg.eligible.includes(i)) return;
-  if(a.steps[state.phase].leader!=='race') return; // only while candidates are being decided
-  state.userPick = i;
-  state.currentLeader = i;
-  state.phase = a.steps.findIndex(s=>s.leader==='single');
-  applyPhase();
-  document.getElementById('stageCaption').textContent = "You're acting as this node - it becomes the leader/proposer and broadcasts to peers.";
-}
-function buildStage(){
-  const a = ALGOS[state.selected];
-  const cfg = a.stage;
-  const nodesGroup = document.getElementById('nodesGroup');
-  nodesGroup.innerHTML='';
-  stageEls = [];
-  for(let i=0;i<9;i++){
-    const pos = nodePos(i);
-    const eligible = cfg.eligible.includes(i);
-    const useSquare = eligible && cfg.shape==='square';
-    let el;
-    let r = eligible ? 9 : 6;
-    if(cfg.weights) r = 6 + cfg.weights[i]*7;
-    if(useSquare){
-      el = document.createElementNS(svgNS,'rect');
-      const s = r*1.7;
-      el.setAttribute('x', pos.x - s/2);
-      el.setAttribute('y', pos.y - s/2);
-      el.setAttribute('width', s);
-      el.setAttribute('height', s);
-      el.setAttribute('rx', 3);
-    } else {
-      el = document.createElementNS(svgNS,'circle');
-      el.setAttribute('cx', pos.x);
-      el.setAttribute('cy', pos.y);
-      el.setAttribute('r', r);
-    }
-    el.classList.add('node', eligible ? 'n-eligible':'n-ineligible');
-    el.style.setProperty('--c', COLORS[a.key]);
-    el.dataset.idx = i;
-    if(eligible){
-      const title = document.createElementNS(svgNS,'title');
-      title.textContent = 'Click to act as this node';
-      el.appendChild(title);
-      el.addEventListener('click', ()=>onNodeClick(i));
-    }
-    nodesGroup.appendChild(el);
-    stageEls.push(el);
-  }
-  document.getElementById('coreEl').style.setProperty('--c', COLORS[a.key]);
-}
-
-function pickLeader(cfg){
-  if(cfg.rotate){
-    const idx = state.round % cfg.eligible.length;
-    return cfg.eligible[idx];
-  }
-  return cfg.leader;
-}
-
-function applyPhase(){
-  const a = ALGOS[state.selected];
-  const cfg = a.stage;
-  const linesGroup = document.getElementById('linesGroup');
-  const ticksGroup = document.getElementById('ticksGroup');
-  const core = document.getElementById('coreEl');
-  linesGroup.innerHTML='';
-  ticksGroup.innerHTML='';
-  core.classList.remove('core-pulse','core-receive','core-append');
-
-  // reset transient classes, keep eligibility classes
-  stageEls.forEach((el,i)=>{
-    el.classList.remove('n-competing','n-leader','n-ack','n-final','n-clock');
-  });
-
-  const step = a.steps[state.phase];
-
-  if(state.phase===0){
-    state.currentLeader = state.userPick!=null ? state.userPick : pickLeader(cfg);
-  }
-  if(step.leader==='race'){
-    cfg.eligible.forEach(i=> stageEls[i].classList.add('n-competing'));
-  }
-  if(step.leader==='single'){
-    stageEls[state.currentLeader].classList.add('n-leader');
-  }
-  if(step.frac>0){
-    const targets = cfg.eligible.filter(i=>i!==state.currentLeader);
-    const count = Math.max(1, Math.round(step.frac*targets.length));
-    const shown = targets.slice(0, count);
-    const leaderPos = nodePos(state.currentLeader);
-    shown.forEach((ti, order)=>{
-      const p = nodePos(ti);
-      const line = document.createElementNS(svgNS,'line');
-      line.setAttribute('x1', leaderPos.x); line.setAttribute('y1', leaderPos.y);
-      line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
-      line.classList.add('link-line');
-      line.style.setProperty('--c', COLORS[a.key]);
-      const len = Math.hypot(p.x-leaderPos.x, p.y-leaderPos.y);
-      line.setAttribute('stroke-dasharray', len);
-      line.setAttribute('stroke-dashoffset', cfg.sync ? 0 : len);
-      if(!cfg.sync){
-        line.style.transitionDelay = (order*70)+'ms';
-        requestAnimationFrame(()=>{ line.setAttribute('stroke-dashoffset', 0); });
-      }
-      linesGroup.appendChild(line);
-      stageEls[ti].classList.add('n-ack');
-
-      const tick = document.createElementNS(svgNS,'text');
-      tick.setAttribute('x', p.x+8);
-      tick.setAttribute('y', p.y-8);
-      tick.classList.add('tick');
-      tick.style.setProperty('--c', COLORS[a.key]);
-      tick.style.animationDelay = (cfg.sync?0:order*70+120)+'ms';
-      tick.textContent='✓';
-      ticksGroup.appendChild(tick);
-    });
-  }
-  if(step.leader==='none'){
-    core.classList.add('core-pulse');
-  } else if(step.frac>0 && step.frac<1){
-    core.classList.add('core-receive');
-  }
-  if(step.finalize){
-    cfg.eligible.forEach(i=> stageEls[i].classList.add('n-final'));
-    if(state.lastHeightRound!==state.round){
-      state.height++;
-      state.lastHeightRound = state.round;
-      core.classList.add('core-append');
-    }
-    document.getElementById('coreHeight').textContent = 'height '+state.height;
-  }
-  if(cfg.clock){
-    stageEls[cfg.leader].classList.add('n-clock');
-  }
-  if(state.userPick!=null && state.userPick===state.currentLeader){
-    const p = nodePos(state.userPick);
-    const yTxt = document.createElementNS(svgNS,'text');
-    yTxt.setAttribute('x', p.x);
-    yTxt.setAttribute('y', p.y-16);
-    yTxt.setAttribute('text-anchor','middle');
-    yTxt.classList.add('you-tag');
-    yTxt.textContent='YOU';
-    ticksGroup.appendChild(yTxt);
-  }
-
-  document.getElementById('stageCaption').textContent = step.t;
-  highlightStep();
-}
-
-function setPhase(p){
-  state.phase = p;
-  applyPhase();
-}
-
-function goPhase(delta){
-  const a = ALGOS[state.selected];
-  let p = state.phase + delta;
-  if(p >= a.steps.length){ p = 0; state.round++; state.userPick=null; }
-  if(p < 0) p = 0;
-  state.phase = p;
-  applyPhase();
-}
-
-/* ---------------- trilemma triangle ---------------- */
-function triPoint(axisIndex, value){
-  // axis 0 = top (Security), 1 = bottom-left (Decentralisation), 2 = bottom-right (Scalability)
-  const angles = [-90, 150, 30];
-  const cx=235, cy=190, R=112;
-  const ang = angles[axisIndex]*Math.PI/180;
-  const frac = value/10;
-  return { x: cx + R*frac*Math.cos(ang), y: cy + R*frac*Math.sin(ang) };
-}
-function fullPoint(axisIndex, frac){
-  const angles = [-90,150,30];
-  const cx=235, cy=190, R=112;
-  const ang = angles[axisIndex]*Math.PI/180;
-  return { x: cx + R*frac*Math.cos(ang), y: cy + R*frac*Math.sin(ang) };
-}
-function buildTriangleStatic(svg){
-  svg.innerHTML='';
-  [0.25,0.5,0.75,1].forEach(f=>{
-    const p0=fullPoint(0,f), p1=fullPoint(1,f), p2=fullPoint(2,f);
-    const poly = document.createElementNS(svgNS,'polygon');
-    poly.setAttribute('points', p0.x+','+p0.y+' '+p1.x+','+p1.y+' '+p2.x+','+p2.y);
-    poly.classList.add('tri-grid-line');
-    svg.appendChild(poly);
-  });
-  const center = fullPoint(0,0);
-  [0,1,2].forEach(ax=>{
-    const p = fullPoint(ax,1);
-    const line = document.createElementNS(svgNS,'line');
-    line.setAttribute('x1',center.x); line.setAttribute('y1',center.y);
-    line.setAttribute('x2',p.x); line.setAttribute('y2',p.y);
-    line.classList.add('tri-axis');
-    svg.appendChild(line);
-  });
-  const labels = [
-    {ax:0, text:'SECURITY', dx:0, dy:-12, anchor:'middle'},
-    {ax:1, text:'DECENTRALISATION', dx:-6, dy:14, anchor:'end'},
-    {ax:2, text:'SCALABILITY', dx:6, dy:14, anchor:'start'}
-  ];
-  labels.forEach(l=>{
-    const p = fullPoint(l.ax,1.3); // axis-name labels sit fixed, well outside the data shape
-    const t = document.createElementNS(svgNS,'text');
-    t.setAttribute('x', p.x+l.dx); t.setAttribute('y', p.y+l.dy);
-    t.setAttribute('text-anchor', l.anchor);
-    t.classList.add('tri-label');
-    t.textContent = l.text;
-    svg.appendChild(t);
-  });
-
-  const dataPoly = document.createElementNS(svgNS,'polygon');
-  dataPoly.id='triDataPoly';
-  dataPoly.classList.add('tri-data');
-  svg.appendChild(dataPoly);
-
-  [0,1,2].forEach(ax=>{
-    const c = document.createElementNS(svgNS,'circle');
-    c.classList.add('tri-point');
-    c.id = 'triPoint'+ax;
-    c.setAttribute('r', 4.5);
-    svg.appendChild(c);
-    const txt = document.createElementNS(svgNS,'text');
-    txt.classList.add('tri-score');
-    txt.id = 'triScore'+ax;
-    svg.appendChild(txt);
-  });
-}
-function updateTriangle(){
-  const a = ALGOS[state.selected];
-  const svg = document.getElementById('triSvg');
-  if(!document.getElementById('triDataPoly')) buildTriangleStatic(svg);
-  const vals = [a.scores.security, a.scores.decentralization, a.scores.scalability];
-  const pts = vals.map((v,i)=>triPoint(i, v));
-  const poly = document.getElementById('triDataPoly');
-  poly.setAttribute('points', pts.map(p=>p.x+','+p.y).join(' '));
-  poly.style.fill = COLORS[a.key];
-  poly.style.stroke = COLORS[a.key];
-
-  const anchors = ['middle','end','start'];
-  const labelDx = [0,-6,6];
-  const labelDy = [-8,14,14];
-  pts.forEach((p,i)=>{
-    const c = document.getElementById('triPoint'+i);
-    c.setAttribute('cx', p.x); c.setAttribute('cy', p.y);
-    c.style.fill = COLORS[a.key];
-    // score number sits just past the data point, well short of the fixed axis-name label
-    const lp = fullPoint(i, Math.min(vals[i]/10 + 0.14, 1.18));
-    const txt = document.getElementById('triScore'+i);
-    txt.setAttribute('x', lp.x+labelDx[i]);
-    txt.setAttribute('y', lp.y+labelDy[i]);
-    txt.setAttribute('text-anchor', anchors[i]);
-    txt.style.fill = COLORS[a.key];
-    txt.textContent = vals[i]+'/10';
-  });
-}
-
-/* ---------------- score bars + stats + attack ---------------- */
-function updateScores(){
-  const a = ALGOS[state.selected];
-  const wrap = document.getElementById('scoreBars');
-  wrap.innerHTML='';
-  const rows = [
-    {label:'Scalability', key:'scalability'},
-    {label:'Security', key:'security'},
-    {label:'Decentralisation', key:'decentralization'}
-  ];
-  rows.forEach(r=>{
-    const v = a.scores[r.key];
-    const div = document.createElement('div');
-    div.className='score-row';
-    div.innerHTML =
-      '<div class="score-row-head"><span class="label">'+r.label+'</span><span class="val">'+v+' / 10</span></div>'+
-      '<div class="score-track"><div class="score-fill" style="width:'+(v*10)+'%; --c:'+COLORS[a.key]+'"></div></div>'+
-      '<p class="score-note">'+a.scoreNotes[r.key]+'</p>';
-    wrap.appendChild(div);
-  });
-
-  const tiles = document.getElementById('statTiles');
-  tiles.innerHTML =
-    '<div class="stat-tile"><span class="n">'+a.stats.blockTime+'</span><span class="l">Block time</span></div>'+
-    '<div class="stat-tile"><span class="n">'+a.stats.tps+'</span><span class="l">Throughput</span></div>'+
-    '<div class="stat-tile"><span class="n">'+a.stats.finality+'</span><span class="l">Finality</span></div>';
-
-  const note = document.getElementById('attackNote');
-  note.style.setProperty('--c', COLORS[a.key]);
-  note.innerHTML = '<b>51% / Sybil resistance -</b> '+a.attack;
-}
-
-/* ---------------- mapping cards + languages ---------------- */
-function updateMapping(){
-  const a = ALGOS[state.selected];
-  const grid = document.getElementById('cardsGrid');
-  grid.innerHTML='';
-  a.chains.forEach(c=>{
-    const card = document.createElement('div');
-    card.className='chain-card';
-    card.style.setProperty('--c', COLORS[a.key]);
-    const layerClass = c.layer==='L1' ? 'layer-l1' : 'layer-l2';
-    card.innerHTML =
-      '<div class="chain-card-head"><span class="chain-name">'+c.name+'</span><span class="chain-ticker">'+c.ticker+'</span></div>'+
-      '<div class="badge-row"><span class="badge '+layerClass+'">'+c.layer+'</span><span class="badge">'+c.language+'</span></div>'+
-      '<p class="chain-why">'+c.why+'</p>';
-    grid.appendChild(card);
-  });
-
-  const pillsWrap = document.getElementById('langPills');
-  pillsWrap.innerHTML='';
-  a.languages.forEach(l=>{
-    const p = document.createElement('span');
-    p.className='lang-pill';
-    p.style.background = COLORS[a.key];
-    p.textContent = l;
-    pillsWrap.appendChild(p);
-  });
-  document.getElementById('langNote').textContent = a.languageNote;
-}
-
-/* ---------------- compatibility matrix ---------------- */
-function pairInfo(a,b){
-  if(a===b) return null;
-  const colorA = COLORS[a.algoKey], colorB = COLORS[b.algoKey];
-  if(a.algoKey===b.algoKey){
-    return {
-      html:'<span class="rk">'+a.ticker+'</span> × <span class="rk2">'+b.ticker+'</span> - both run <b>'+a.algoName+'</b>. Compatible family: similar validator economics and finality assumptions. They are still separate networks though - moving assets between them still needs a bridge or a wrapped asset.',
-      ca: colorA, cb: colorA
-    };
-  }
-  return {
-    html:'<span class="rk">'+a.ticker+'</span> × <span class="rk2">'+b.ticker+'</span> - <b>'+a.algoShort+'</b> vs <b>'+b.algoShort+'</b>. Different consensus rules mean different finality guarantees and validator sets: neither chain can directly verify the other&rsquo;s blocks, so a trust-minimised bridge is required to move value between them.',
-    ca: colorA, cb: colorB
-  };
-}
-
-function buildMatrix(){
-  const grid = document.getElementById('matrixGrid');
-  grid.innerHTML='';
-  const n = ALL_CHAINS.length;
-  grid.style.gridTemplateColumns = '132px repeat('+n+', 24px)';
-
-  // corner
-  const corner = document.createElement('div');
-  corner.className='mx-corner';
-  grid.appendChild(corner);
-
-  // column headers
-  ALL_CHAINS.forEach((c,ci)=>{
-    const h = document.createElement('div');
-    h.className='mx-colhead'+(GROUP_START_IDX.includes(ci)?' group-t':'');
-    h.textContent = c.ticker;
-    h.title = c.name+' - '+c.algoName;
-    grid.appendChild(h);
-  });
-
-  // rows
-  ALL_CHAINS.forEach((rowChain, ri)=>{
-    const rh = document.createElement('div');
-    rh.className='mx-rowhead'+(GROUP_START_IDX.includes(ri)?' group-t':'');
-    rh.innerHTML = '<b>'+rowChain.ticker+'</b>'+rowChain.name;
-    rh.title = rowChain.name+' - '+rowChain.algoName;
-    grid.appendChild(rh);
-
-    ALL_CHAINS.forEach((colChain, ci)=>{
-      const cell = document.createElement('div');
-      cell.className='mx-cell'+(GROUP_START_IDX.includes(ci)?' group-l':'');
-      cell.dataset.ri = ri; cell.dataset.ci = ci;
-      if(ri===ci){
-        cell.classList.add('self');
-        cell.title = rowChain.name;
-      } else if(rowChain.algoKey===colChain.algoKey){
-        cell.style.background = hexToRgba(COLORS[rowChain.algoKey], 0.30);
-        cell.title = rowChain.ticker+' × '+colChain.ticker+' - compatible ('+rowChain.algoShort+')';
-      } else {
-        cell.style.background = 'var(--surface)';
-        cell.title = rowChain.ticker+' × '+colChain.ticker+' - incompatible ('+rowChain.algoShort+' vs '+colChain.algoShort+')';
-      }
-      cell.addEventListener('click', ()=>{
-        const info = pairInfo(rowChain, colChain);
-        const box = document.getElementById('readout');
-        if(!info){
-          box.innerHTML = rowChain.name+' ('+rowChain.ticker+') runs '+rowChain.algoName+'.';
-        } else {
-          box.style.setProperty('--c-a', info.ca);
-          box.style.setProperty('--c-b', info.cb);
-          box.innerHTML = info.html;
+      const ALGOS = {
+        pow: {
+          key: 'pow', name: 'Proof of Work', short: 'PoW', tagline: 'Security through spent energy',
+          mechanism: "Miners race to solve a computationally expensive puzzle - finding a number (a nonce) that, hashed together with the block's data, produces an output below a target value. There is no shortcut: the only way to find it is brute-force guessing. Whoever finds it first earns the right to publish the next block, and every other node can verify the answer instantly.",
+          steps: [
+            { t: "A candidate block is assembled from pending transactions and a fresh header.", leader: 'none', frac: 0, finalize: false },
+            { t: "Miners insert a nonce into the header and compute a SHA-256 hash of the result.", leader: 'race', frac: 0, finalize: false },
+            { t: "Almost every hash misses the difficulty target, so miners increment the nonce and hash again - billions of times per second.", leader: 'race', frac: 0, finalize: false },
+            { t: "One miner's hash finally lands below the target - a valid Proof of Work has been found.", leader: 'single', frac: 0, finalize: false },
+            { t: "The winning miner immediately broadcasts the solved block to its nearest peers.", leader: 'single', frac: 0.4, finalize: false },
+            { t: "The block propagates outward across the peer-to-peer network, hop by hop.", leader: 'single', frac: 0.8, finalize: false },
+            { t: "Every node re-runs the hash and re-checks every transaction to confirm the proof is genuine.", leader: 'single', frac: 1, finalize: false },
+            { t: "The block is appended to the chain; miners drop any competing block and build on this one.", leader: 'single', frac: 1, finalize: true }
+          ],
+          scores: { scalability: 2, security: 10, decentralization: 8 },
+          scoreNotes: {
+            scalability: "Blocks arrive slowly (minutes) and most energy goes into competition, not into processing more transactions.",
+            security: "Rewriting history means outrunning the entire honest network's hashing power - the costliest 51% attack of any mechanism at scale.",
+            decentralization: "Anyone with hardware can mine, though industrial ASIC farms have concentrated real-world participation."
+          },
+          stats: { blockTime: '~10 min', tps: '~7 TPS', finality: '~60 min' },
+          attack: "A 51% attack requires out-hashing the rest of the planet's miners combined - for large chains this would cost billions in hardware and electricity, making it economically irrational rather than merely difficult. Sybil resistance comes from the fact that identities are worthless here; only real computational work counts.",
+          languages: ['Script', 'Solidity'],
+          languageNote: "Bitcoin's own Script is deliberately not Turing-complete - a security choice to keep validation predictable. Ethereum Classic kept Ethereum's original Solidity, since it forked away before the switch to Proof of Stake.",
+          chains: [
+            { name: 'Bitcoin', ticker: 'BTC', layer: 'L1', language: 'Script', why: "Values maximal security and censorship-resistance over raw speed - PoW's brute-force cost is the point, not a flaw." },
+            { name: 'Litecoin', ticker: 'LTC', layer: 'L1', language: 'Script', why: "Uses Scrypt hashing for faster ~2.5 min blocks while keeping PoW's proven security model." },
+            { name: 'Ethereum Classic', ticker: 'ETC', layer: 'L1', language: 'Solidity', why: "Continued Ethereum's original PoW chain after the 2016 fork, prioritising immutability over migration." },
+            { name: 'Lightning Network', ticker: 'LN', layer: 'L2', language: '-', why: "Moves everyday payments into off-chain channels, settling only opening/closing balances on Bitcoin's PoW base layer." }
+          ],
+          stage: { eligible: [0, 1, 2, 3, 4, 5, 6, 7, 8], shape: 'circle', leader: 0, rotate: true, sync: false, clock: false, durations: [1000, 3200, 1000, 1500, 1900] }
+        },
+        pos: {
+          key: 'pos', name: 'Proof of Stake', short: 'PoS', tagline: 'Security through locked capital',
+          mechanism: "Validators lock up native coins as collateral instead of burning electricity. The protocol pseudo-randomly picks a proposer for each block - weighted by how much is staked - while a rotating committee of other validators attests to the block's validity. Provable misbehaviour costs a validator a slice of their stake.",
+          steps: [
+            { t: "Validators lock up a minimum stake of the network's native token as collateral.", leader: 'none', frac: 0, finalize: false },
+            { t: "A verifiable random function, weighted by stake size, begins selecting this slot's proposer.", leader: 'race', frac: 0, finalize: false },
+            { t: "The VRF output is revealed - one validator is now the proposer for this slot.", leader: 'single', frac: 0, finalize: false },
+            { t: "The proposer assembles pending transactions into a block and broadcasts it.", leader: 'single', frac: 0.3, finalize: false },
+            { t: "A randomly-sampled attestation committee starts voting on the block's validity.", leader: 'single', frac: 0.55, finalize: false },
+            { t: "Attestations keep arriving; the vote tally climbs toward a two-thirds majority.", leader: 'single', frac: 0.8, finalize: false },
+            { t: "Two-thirds of staked weight has attested - the block is finalized.", leader: 'single', frac: 1, finalize: true },
+            { t: "Any validator later proven to have equivocated has part of its stake slashed.", leader: 'single', frac: 1, finalize: true }
+          ],
+          scores: { scalability: 6, security: 8, decentralization: 7 },
+          scoreNotes: {
+            scalability: "No puzzle-solving wasted on competition means shorter, more predictable block times than PoW.",
+            security: "Attacking the chain means acquiring and risking a majority of all staked value - the attacker's own capital is destroyed if caught.",
+            decentralization: "Staking has a far lower entry cost than mining hardware, though large staking pools and exchanges can concentrate voting power."
+          },
+          stats: { blockTime: '~12 sec', tps: '~15–100 TPS', finality: '~13–15 min' },
+          attack: "A 51% attack requires controlling the majority of all staked coins - on a large network that means buying a huge share of the circulating supply (driving its price up) and then destroying its own value through slashing once caught. Sybil resistance comes from stake being expensive and finite, not from identity checks.",
+          languages: ['Solidity', 'Vyper', 'Plutus (Haskell)', 'Rust'],
+          languageNote: "Most PoS smart-contract platforms lean on the EVM and Solidity for tooling compatibility, while newer designs - Cardano's Plutus, Polkadot's ink! - trade that compatibility for stronger formal-verification or performance guarantees.",
+          chains: [
+            { name: 'Ethereum', ticker: 'ETH', layer: 'L1', language: 'Solidity, Vyper', why: "Moved from PoW to PoS in 'The Merge' to cut energy use by roughly 99.9% without changing its execution layer." },
+            { name: 'Cardano', ticker: 'ADA', layer: 'L1', language: 'Plutus (Haskell)', why: "Ouroboros PoS was built from peer-reviewed research for mathematically provable security guarantees." },
+            { name: 'Arbitrum One', ticker: 'ARB', layer: 'L2', language: 'Solidity', why: "An Optimistic Rollup that executes transactions off-chain and posts proofs back to Ethereum, inheriting its PoS security." }
+          ],
+          stage: {
+            eligible: [0, 1, 2, 3, 4, 5, 6, 7, 8], shape: 'circle', leader: 4, rotate: false, sync: false, clock: false,
+            weights: [0.3, 0.6, 0.9, 0.4, 1, 0.5, 0.7, 0.35, 0.55], durations: [1000, 1600, 1000, 1500, 1700]
+          }
+        },
+        dpos: {
+          key: 'dpos', name: 'Delegated Proof of Stake', short: 'DPoS', tagline: 'Security through elected accountability',
+          mechanism: "Token holders vote for a small number of delegates - often called block producers or witnesses - using their holdings as voting weight. Only the top vote-getters get to produce blocks, taking turns in a fixed rotation, and can be voted out at any time if they misbehave or under-perform.",
+          steps: [
+            { t: "Token holders cast approval votes for delegate candidates, weighted by their holdings.", leader: 'none', frac: 0, finalize: false },
+            { t: "Vote tallies are counted; the top vote-getters (often a fixed number, like 21) become active producers.", leader: 'race', frac: 0, finalize: false },
+            { t: "Producers are locked into a round-robin production schedule.", leader: 'race', frac: 0, finalize: false },
+            { t: "The scheduled producer for this slot builds the next block.", leader: 'single', frac: 0, finalize: false },
+            { t: "The block is broadcast to the small, known set of fellow producers.", leader: 'single', frac: 0.6, finalize: false },
+            { t: "Producers confirm it almost instantly - overhead is minimal with such a small, known validator set.", leader: 'single', frac: 1, finalize: false },
+            { t: "The block is finalized; any producer that misses its slot or misbehaves can be voted out immediately.", leader: 'single', frac: 1, finalize: true }
+          ],
+          scores: { scalability: 9, security: 5, decentralization: 3 },
+          scoreNotes: {
+            scalability: "A tiny, known set of producers can coordinate almost instantly, enabling very fast, high-throughput blocks.",
+            security: "Fewer block producers means fewer parties would need to collude to censor or reorganise the chain.",
+            decentralization: "Real influence concentrates in whoever wins the popularity or capital contest for the small number of producer seats."
+          },
+          stats: { blockTime: '~0.5–3 sec', tps: '1k–4k+ TPS', finality: '~1–2 min' },
+          attack: "A 51% attack here means colluding with a majority of the small elected producer set - harder to do covertly since producers are publicly identified, but easier to coordinate than convincing millions of anonymous miners or validators. Voter apathy is the main real-world risk: if few people vote, a small group can capture most producer seats.",
+          languages: ['C++', 'Solidity'],
+          languageNote: "EOS and Hive use custom C++ toolchains built around their producer-scheduled architecture, while TRON adopted an EVM-compatible virtual machine so Solidity developers could deploy with little modification.",
+          chains: [
+            { name: 'EOS', ticker: 'EOS', layer: 'L1', language: 'C++ (WASM)', why: "A 21-producer model was chosen explicitly to maximise throughput for consumer-scale applications." }
+          ],
+          stage: { eligible: [0, 2, 4, 6], shape: 'circle', leader: 0, rotate: true, sync: false, clock: false, durations: [900, 1100, 900, 1200, 1200] }
+        },
+        poa: {
+          key: 'poa', name: 'Proof of Authority', short: 'PoA', tagline: 'Security through verified identity',
+          mechanism: "A small, pre-approved set of validators - vetted by real-world identity or reputation - take turns signing blocks. There's no mining or staking; trust comes from knowing exactly who is allowed to produce blocks, and knowing they have something to lose (reputation, a legal contract) if they cheat.",
+          steps: [
+            { t: "A fixed list of pre-approved validators (sealers) is already known to every node.", leader: 'none', frac: 0, finalize: false },
+            { t: "The next sealer in the round-robin rotation is determined by the slot number.", leader: 'race', frac: 0, finalize: false },
+            { t: "That sealer assembles a block and signs it with its private key.", leader: 'single', frac: 0, finalize: false },
+            { t: "The signed block is broadcast to the rest of the authority set.", leader: 'single', frac: 0.6, finalize: false },
+            { t: "Peers check the signature against the known list of approved public keys.", leader: 'single', frac: 1, finalize: false },
+            { t: "The signature checks out - no puzzle-solving or stake required, only a valid identity.", leader: 'single', frac: 1, finalize: false },
+            { t: "The block is appended; a sealer caught signing conflicting blocks can be removed by governance.", leader: 'single', frac: 1, finalize: true }
+          ],
+          scores: { scalability: 8, security: 5, decentralization: 2 },
+          scoreNotes: {
+            scalability: "A small fixed set of trusted signers needs almost no coordination overhead, so blocks arrive quickly and predictably.",
+            security: "Resilient to anonymous attacks since every validator is identifiable, but the whole system trusts that small group not to collude.",
+            decentralization: "Only a handful of pre-approved parties can ever produce blocks - closer to a permissioned network than an open one."
+          },
+          stats: { blockTime: '~3–5 sec', tps: 'hundreds–1k+ TPS', finality: '~10–15 sec' },
+          attack: "Sybil resistance here comes entirely from vetting - you can't simply spin up new identities to gain influence. A 51% attack would mean a majority of the known, named validators colluding, technically easier than in open networks but carrying real reputational and legal consequences for identifiable operators.",
+          languages: ['Solidity'],
+          languageNote: "PoA and PoA-hybrid chains overwhelmingly stay EVM-compatible so they can reuse Ethereum's Solidity tooling, wallets, and developer base while trading decentralisation for speed.",
+          chains: [
+            { name: 'VeChain', ticker: 'VET', layer: 'L1', language: 'Solidity', why: "Supply-chain tracking needs fast, predictable, low-cost blocks from a small set of authorised nodes." }
+          ],
+          stage: { eligible: [0, 3, 6], shape: 'square', leader: 0, rotate: true, sync: false, clock: false, durations: [700, 800, 700, 1000, 1000] }
+        },
+        bft: {
+          key: 'bft', name: 'Byzantine Fault Tolerant (BFT)', short: 'BFT', tagline: 'Security through supermajority agreement',
+          mechanism: "A known set of validators proposes and votes on blocks in explicit rounds. Once more than two-thirds of voting power agrees across two successive voting phases, the block is instantly and irreversibly final - the network keeps working even if up to one-third of validators go offline or act maliciously.",
+          steps: [
+            { t: "A proposer for this round is chosen round-robin, weighted by voting power.", leader: 'single', frac: 0, finalize: false },
+            { t: "The proposer broadcasts a candidate block to every validator.", leader: 'single', frac: 0.4, finalize: false },
+            { t: "Validators broadcast a Pre-vote signalling they consider the block valid.", leader: 'single', frac: 0.65, finalize: false },
+            { t: "Over two-thirds of voting power Pre-votes the same block - a Pre-vote quorum locks in.", leader: 'single', frac: 0.8, finalize: false },
+            { t: "Validators now broadcast a Pre-commit for that same block.", leader: 'single', frac: 0.9, finalize: false },
+            { t: "Two-thirds Pre-commit - the block reaches instant, irreversible finality.", leader: 'single', frac: 1, finalize: true },
+            { t: "If no quorum forms before the round times out, this round is simply abandoned...", leader: 'single', frac: 1, finalize: true },
+            { t: "A new proposer is chosen for the next round, keeping the network live.", leader: 'single', frac: 1, finalize: true }
+          ],
+          scores: { scalability: 7, security: 7, decentralization: 5 },
+          scoreNotes: {
+            scalability: "Instant finality and a known validator set let blocks confirm in a few seconds with nothing 'stacking up' afterwards.",
+            security: "Mathematically tolerant of up to one-third malicious validators, with no forking possible once a block is final.",
+            decentralization: "Validator sets are usually capped at a size the voting protocol can coordinate quickly, limiting how open participation can be."
+          },
+          stats: { blockTime: '~1–6 sec', tps: '1k–10k+ TPS', finality: 'Instant' },
+          attack: "A 51% attack doesn't even apply the same way here - a coalition needs over two-thirds of voting power to break liveness or safety, and getting caught means visible, slashable equivocation. Because the validator set is known in advance, Sybil resistance depends on how validators are admitted, not on the voting algorithm itself.",
+          languages: ['Go', 'Rust', 'Java', 'Node.js', 'Hooks (C)'],
+          languageNote: "BFT chains split by audience: public networks like Cosmos lean on Go and Rust (CosmWasm) for app-chain tooling, while permissioned platforms like Hyperledger Fabric let enterprises write contracts in general-purpose languages their teams already know.",
+          chains: [
+            { name: 'Hyperledger Fabric', ticker: '-', layer: 'L1', language: 'Go, Java, Node.js', why: "Enterprise consortiums need instant, non-forking finality for auditable business processes." }
+          ],
+          stage: { eligible: [0, 1, 2, 3, 4, 5, 6], shape: 'circle', leader: 0, rotate: false, sync: true, clock: false, durations: [900, 1400, 900, 1300, 1600] }
+        },
+        poh: {
+          key: 'poh', name: 'Proof of History (+ Proof of Stake)', short: 'PoH', tagline: 'Security through a verifiable clock',
+          mechanism: "A rotating leader continuously hashes its own output to build a verifiable, tamper-evident sequence that acts as a cryptographic clock. Transactions are stamped into this sequence as they arrive, so validators can agree on ordering and timing without constantly messaging each other - stake-weighted voting (Tower BFT) is layered on top to finalize state.",
+          steps: [
+            { t: "The current leader continuously hashes its own previous output, one tick after another.", leader: 'single', frac: 0, finalize: false },
+            { t: "Each hash tick is timestamped, building an unbroken, verifiable sequence - a cryptographic clock.", leader: 'single', frac: 0, finalize: false },
+            { t: "Incoming transactions are inserted into the sequence, fixing their exact position in time.", leader: 'single', frac: 0.3, finalize: false },
+            { t: "The leader streams the ordered ticks and transactions to every validator as they're produced.", leader: 'single', frac: 0.6, finalize: false },
+            { t: "Validators replay the hash chain locally - anyone can verify the ordering without asking the leader.", leader: 'single', frac: 0.85, finalize: false },
+            { t: "Tower BFT collects stake-weighted votes on this same sequence, using it as a trusted clock.", leader: 'single', frac: 1, finalize: false },
+            { t: "Enough stake-weighted votes land - the state confirmed by this slot is locked in.", leader: 'single', frac: 1, finalize: true },
+            { t: "The leader schedule rotates to the next validator for the following slot.", leader: 'single', frac: 1, finalize: true }
+          ],
+          scores: { scalability: 10, security: 6, decentralization: 4 },
+          scoreNotes: {
+            scalability: "Removing the need to agree on time before agreeing on order lets the network process an extremely high transaction volume.",
+            security: "Inherits Proof of Stake's economic security for voting, but a single leader per slot is a temporary point of concentrated trust.",
+            decentralization: "Running a competitive validator requires serious hardware to keep pace with the PoH clock, raising the real-world bar to participate."
+          },
+          stats: { blockTime: '~0.4 sec', tps: 'up to 65k TPS', finality: '~12–13 sec' },
+          attack: "Because voting is stake-weighted, a 51% attack still means acquiring a majority of staked value, same as plain PoS. The risk PoH adds is operational, not cryptographic: if the current leader stalls or drops offline, block production for that slot pauses until the schedule rotates to the next one.",
+          languages: ['Rust', 'C', 'C++'],
+          languageNote: "Solana's validator client and on-chain programs are written in performance-critical languages - Rust, C, C++ - needed to keep up with its sub-second block cadence.",
+          chains: [
+            { name: 'Solana', ticker: 'SOL', layer: 'L1', language: 'Rust, C, C++', why: "PoH's built-in clock removes most validator-to-validator messaging, enabling extremely high throughput for latency-sensitive apps." }
+          ],
+          stage: { eligible: [0, 1, 2, 3, 4, 5, 6, 7, 8], shape: 'circle', leader: 4, rotate: false, sync: false, clock: true, durations: [500, 650, 500, 800, 900] }
         }
+      };
+
+      const ORDER = ['pow', 'pos', 'dpos', 'poa', 'bft', 'poh'];
+      const svgNS = 'http://www.w3.org/2000/svg';
+
+      /* ---------------- flatten chains for matrix ---------------- */
+      const ALL_CHAINS = [];
+      ORDER.forEach(k => {
+        ALGOS[k].chains.forEach(c => {
+          ALL_CHAINS.push(Object.assign({}, c, { algoKey: k, algoShort: ALGOS[k].short, algoName: ALGOS[k].name }));
+        });
       });
-      grid.appendChild(cell);
-    });
-  });
-}
+      const GROUP_SIZES = ORDER.map(k => ALGOS[k].chains.length);
+      const GROUP_START_IDX = [];
+      { let acc = 0; ORDER.forEach((k, i) => { if (i > 0) GROUP_START_IDX.push(acc); acc += GROUP_SIZES[i]; }); }
 
-function updateMatrixHighlight(){
-  const sel = state.selected;
-  document.querySelectorAll('.mx-cell').forEach(cell=>{
-    const ri = +cell.dataset.ri, ci = +cell.dataset.ci;
-    const rowAlgo = ALL_CHAINS[ri].algoKey, colAlgo = ALL_CHAINS[ci].algoKey;
-    const involved = rowAlgo===sel || colAlgo===sel;
-    cell.classList.toggle('dim', !involved && !cell.classList.contains('self'));
-  });
-}
+      /* ---------------- state ---------------- */
+      const state = { selected: 'pow', phase: 0, round: 0, currentLeader: 0, userPick: null, height: 0, lastHeightRound: -1 };
 
-function buildMatrixLegend(){
-  const wrap = document.getElementById('matrixLegend');
-  wrap.innerHTML='';
-  ORDER.forEach(k=>{
-    const item = document.createElement('span');
-    item.className='lg-item';
-    item.innerHTML = '<span class="lg-swatch" style="background:'+COLORS[k]+'"></span>'+ALGOS[k].short;
-    wrap.appendChild(item);
-  });
-  const diag = document.createElement('span');
-  diag.className='lg-item';
-  diag.innerHTML = '<span class="lg-swatch" style="background:var(--ink)"></span>same chain';
-  wrap.appendChild(diag);
-}
+      function hexToRgba(hex, a) {
+        const h = hex.replace('#', '');
+        const r = parseInt(h.substring(0, 2), 16), g = parseInt(h.substring(2, 4), 16), b = parseInt(h.substring(4, 6), 16);
+        return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+      }
 
-/* ---------------- orchestration ---------------- */
-function selectAlgo(key){
-  state.selected = key;
-  state.phase = 0;
-  state.round = 0;
-  state.userPick = null;
-  state.height = 0;
-  state.lastHeightRound = -1;
-  document.getElementById('coreHeight').textContent = 'height 0';
-  updateChips();
-  updateOverview();
-  buildStage();
-  applyPhase();
-  updateTriangle();
-  updateScores();
-  updateMapping();
-  updateMatrixHighlight();
-}
+      /* ---------------- chips ---------------- */
+      function buildChips() {
+        const row = document.getElementById('chipRow');
+        row.innerHTML = '';
+        ORDER.forEach(k => {
+          const a = ALGOS[k];
+          const btn = document.createElement('button');
+          btn.className = 'chip';
+          btn.type = 'button';
+          btn.style.setProperty('--c', COLORS[k]);
+          btn.setAttribute('aria-pressed', k === state.selected ? 'true' : 'false');
+          btn.innerHTML = '<span class="dot"></span>' + a.short + ' <small>' + a.name.replace(a.short, '').replace(/[()]/g, '').trim().split(' ').slice(0, 0).join('') + '</small>';
+          btn.querySelector('small').textContent = a.name;
+          btn.addEventListener('click', () => selectAlgo(k));
+          row.appendChild(btn);
+        });
+      }
+      function updateChips() {
+        document.querySelectorAll('#chipRow .chip').forEach((el, i) => {
+          el.setAttribute('aria-pressed', ORDER[i] === state.selected ? 'true' : 'false');
+        });
+      }
 
-function init(){
-  buildChips();
-  buildMatrixLegend();
-  buildMatrix();
-  document.getElementById('prevBtn').addEventListener('click', ()=> goPhase(-1));
-  document.getElementById('nextBtn').addEventListener('click', ()=> goPhase(1));
-  document.getElementById('replayBtn').addEventListener('click', ()=>{
-    state.phase = 0; state.round++; state.userPick=null;
-    applyPhase();
-  });
-  selectAlgo('pow');
-}
+      /* ---------------- overview text ---------------- */
+      function updateOverview() {
+        const a = ALGOS[state.selected];
+        document.getElementById('tagline').textContent = a.tagline;
+        document.getElementById('tagline').style.setProperty('--c', COLORS[a.key]);
+        document.getElementById('mechanismText').textContent = a.mechanism;
 
-document.addEventListener('DOMContentLoaded', init);
-})();
-</script>
+        const list = document.getElementById('stepsList');
+        list.innerHTML = '';
+        a.steps.forEach((s, i) => {
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.className = 'step-item' + (i === state.phase ? ' active' : '');
+          btn.type = 'button';
+          btn.style.setProperty('--c', COLORS[a.key]);
+          btn.innerHTML = '<span class="num">0' + (i + 1) + '</span><span>' + s.t + '</span>';
+          btn.addEventListener('click', () => { setPhase(i); });
+          li.appendChild(btn);
+          list.appendChild(li);
+        });
+      }
+      function highlightStep() {
+        document.querySelectorAll('.step-item').forEach((el, i) => {
+          el.classList.toggle('active', i === state.phase);
+        });
+      }
+
+      /* ---------------- stage (network animation) ---------------- */
+      function nodePos(i) {
+        const angle = (-90 + i * 40) * Math.PI / 180;
+        return { x: 170 + 108 * Math.cos(angle), y: 155 + 108 * Math.sin(angle) };
+      }
+      let stageEls = [];
+      function onNodeClick(i) {
+        const a = ALGOS[state.selected];
+        const cfg = a.stage;
+        if (!cfg.eligible.includes(i)) return;
+        if (a.steps[state.phase].leader !== 'race') return; // only while candidates are being decided
+        state.userPick = i;
+        state.currentLeader = i;
+        state.phase = a.steps.findIndex(s => s.leader === 'single');
+        applyPhase();
+        document.getElementById('stageCaption').textContent = "You're acting as this node - it becomes the leader/proposer and broadcasts to peers.";
+      }
+      function buildStage() {
+        const a = ALGOS[state.selected];
+        const cfg = a.stage;
+        const nodesGroup = document.getElementById('nodesGroup');
+        nodesGroup.innerHTML = '';
+        stageEls = [];
+        for (let i = 0; i < 9; i++) {
+          const pos = nodePos(i);
+          const eligible = cfg.eligible.includes(i);
+          const useSquare = eligible && cfg.shape === 'square';
+          let el;
+          let r = eligible ? 9 : 6;
+          if (cfg.weights) r = 6 + cfg.weights[i] * 7;
+          if (useSquare) {
+            el = document.createElementNS(svgNS, 'rect');
+            const s = r * 1.7;
+            el.setAttribute('x', pos.x - s / 2);
+            el.setAttribute('y', pos.y - s / 2);
+            el.setAttribute('width', s);
+            el.setAttribute('height', s);
+            el.setAttribute('rx', 3);
+          } else {
+            el = document.createElementNS(svgNS, 'circle');
+            el.setAttribute('cx', pos.x);
+            el.setAttribute('cy', pos.y);
+            el.setAttribute('r', r);
+          }
+          el.classList.add('node', eligible ? 'n-eligible' : 'n-ineligible');
+          el.style.setProperty('--c', COLORS[a.key]);
+          el.dataset.idx = i;
+          if (eligible) {
+            const title = document.createElementNS(svgNS, 'title');
+            title.textContent = 'Click to act as this node';
+            el.appendChild(title);
+            el.addEventListener('click', () => onNodeClick(i));
+          }
+          nodesGroup.appendChild(el);
+          stageEls.push(el);
+        }
+        document.getElementById('coreEl').style.setProperty('--c', COLORS[a.key]);
+      }
+
+      function pickLeader(cfg) {
+        if (cfg.rotate) {
+          const idx = state.round % cfg.eligible.length;
+          return cfg.eligible[idx];
+        }
+        return cfg.leader;
+      }
+
+      function applyPhase() {
+        const a = ALGOS[state.selected];
+        const cfg = a.stage;
+        const linesGroup = document.getElementById('linesGroup');
+        const ticksGroup = document.getElementById('ticksGroup');
+        const core = document.getElementById('coreEl');
+        linesGroup.innerHTML = '';
+        ticksGroup.innerHTML = '';
+        core.classList.remove('core-pulse', 'core-receive', 'core-append');
+
+        // reset transient classes, keep eligibility classes
+        stageEls.forEach((el, i) => {
+          el.classList.remove('n-competing', 'n-leader', 'n-ack', 'n-final', 'n-clock');
+        });
+
+        const step = a.steps[state.phase];
+
+        if (state.phase === 0) {
+          state.currentLeader = state.userPick != null ? state.userPick : pickLeader(cfg);
+        }
+        if (step.leader === 'race') {
+          cfg.eligible.forEach(i => stageEls[i].classList.add('n-competing'));
+        }
+        if (step.leader === 'single') {
+          stageEls[state.currentLeader].classList.add('n-leader');
+        }
+        if (step.frac > 0) {
+          const targets = cfg.eligible.filter(i => i !== state.currentLeader);
+          const count = Math.max(1, Math.round(step.frac * targets.length));
+          const shown = targets.slice(0, count);
+          const leaderPos = nodePos(state.currentLeader);
+          shown.forEach((ti, order) => {
+            const p = nodePos(ti);
+            const line = document.createElementNS(svgNS, 'line');
+            line.setAttribute('x1', leaderPos.x); line.setAttribute('y1', leaderPos.y);
+            line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+            line.classList.add('link-line');
+            line.style.setProperty('--c', COLORS[a.key]);
+            const len = Math.hypot(p.x - leaderPos.x, p.y - leaderPos.y);
+            line.setAttribute('stroke-dasharray', len);
+            line.setAttribute('stroke-dashoffset', cfg.sync ? 0 : len);
+            if (!cfg.sync) {
+              line.style.transitionDelay = (order * 70) + 'ms';
+              requestAnimationFrame(() => { line.setAttribute('stroke-dashoffset', 0); });
+            }
+            linesGroup.appendChild(line);
+            stageEls[ti].classList.add('n-ack');
+
+            const tick = document.createElementNS(svgNS, 'text');
+            tick.setAttribute('x', p.x + 8);
+            tick.setAttribute('y', p.y - 8);
+            tick.classList.add('tick');
+            tick.style.setProperty('--c', COLORS[a.key]);
+            tick.style.animationDelay = (cfg.sync ? 0 : order * 70 + 120) + 'ms';
+            tick.textContent = '✓';
+            ticksGroup.appendChild(tick);
+          });
+        }
+        if (step.leader === 'none') {
+          core.classList.add('core-pulse');
+        } else if (step.frac > 0 && step.frac < 1) {
+          core.classList.add('core-receive');
+        }
+        if (step.finalize) {
+          cfg.eligible.forEach(i => stageEls[i].classList.add('n-final'));
+          if (state.lastHeightRound !== state.round) {
+            state.height++;
+            state.lastHeightRound = state.round;
+            core.classList.add('core-append');
+          }
+          document.getElementById('coreHeight').textContent = 'height ' + state.height;
+        }
+        if (cfg.clock) {
+          stageEls[cfg.leader].classList.add('n-clock');
+        }
+        if (state.userPick != null && state.userPick === state.currentLeader) {
+          const p = nodePos(state.userPick);
+          const yTxt = document.createElementNS(svgNS, 'text');
+          yTxt.setAttribute('x', p.x);
+          yTxt.setAttribute('y', p.y - 16);
+          yTxt.setAttribute('text-anchor', 'middle');
+          yTxt.classList.add('you-tag');
+          yTxt.textContent = 'YOU';
+          ticksGroup.appendChild(yTxt);
+        }
+
+        document.getElementById('stageCaption').textContent = step.t;
+        highlightStep();
+      }
+
+      function setPhase(p) {
+        state.phase = p;
+        applyPhase();
+      }
+
+      function goPhase(delta) {
+        const a = ALGOS[state.selected];
+        let p = state.phase + delta;
+        if (p >= a.steps.length) { p = 0; state.round++; state.userPick = null; }
+        if (p < 0) p = 0;
+        state.phase = p;
+        applyPhase();
+      }
+
+      /* ---------------- trilemma triangle ---------------- */
+      function triPoint(axisIndex, value) {
+        // axis 0 = top (Security), 1 = bottom-left (Decentralisation), 2 = bottom-right (Scalability)
+        const angles = [-90, 150, 30];
+        const cx = 235, cy = 190, R = 112;
+        const ang = angles[axisIndex] * Math.PI / 180;
+        const frac = value / 10;
+        return { x: cx + R * frac * Math.cos(ang), y: cy + R * frac * Math.sin(ang) };
+      }
+      function fullPoint(axisIndex, frac) {
+        const angles = [-90, 150, 30];
+        const cx = 235, cy = 190, R = 112;
+        const ang = angles[axisIndex] * Math.PI / 180;
+        return { x: cx + R * frac * Math.cos(ang), y: cy + R * frac * Math.sin(ang) };
+      }
+      function buildTriangleStatic(svg) {
+        svg.innerHTML = '';
+        [0.25, 0.5, 0.75, 1].forEach(f => {
+          const p0 = fullPoint(0, f), p1 = fullPoint(1, f), p2 = fullPoint(2, f);
+          const poly = document.createElementNS(svgNS, 'polygon');
+          poly.setAttribute('points', p0.x + ',' + p0.y + ' ' + p1.x + ',' + p1.y + ' ' + p2.x + ',' + p2.y);
+          poly.classList.add('tri-grid-line');
+          svg.appendChild(poly);
+        });
+        const center = fullPoint(0, 0);
+        [0, 1, 2].forEach(ax => {
+          const p = fullPoint(ax, 1);
+          const line = document.createElementNS(svgNS, 'line');
+          line.setAttribute('x1', center.x); line.setAttribute('y1', center.y);
+          line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+          line.classList.add('tri-axis');
+          svg.appendChild(line);
+        });
+        const labels = [
+          { ax: 0, text: 'SECURITY', dx: 0, dy: -12, anchor: 'middle' },
+          { ax: 1, text: 'DECENTRALISATION', dx: -6, dy: 14, anchor: 'end' },
+          { ax: 2, text: 'SCALABILITY', dx: 6, dy: 14, anchor: 'start' }
+        ];
+        labels.forEach(l => {
+          const p = fullPoint(l.ax, 1.3); // axis-name labels sit fixed, well outside the data shape
+          const t = document.createElementNS(svgNS, 'text');
+          t.setAttribute('x', p.x + l.dx); t.setAttribute('y', p.y + l.dy);
+          t.setAttribute('text-anchor', l.anchor);
+          t.classList.add('tri-label');
+          t.textContent = l.text;
+          svg.appendChild(t);
+        });
+
+        const dataPoly = document.createElementNS(svgNS, 'polygon');
+        dataPoly.id = 'triDataPoly';
+        dataPoly.classList.add('tri-data');
+        svg.appendChild(dataPoly);
+
+        [0, 1, 2].forEach(ax => {
+          const c = document.createElementNS(svgNS, 'circle');
+          c.classList.add('tri-point');
+          c.id = 'triPoint' + ax;
+          c.setAttribute('r', 4.5);
+          svg.appendChild(c);
+          const txt = document.createElementNS(svgNS, 'text');
+          txt.classList.add('tri-score');
+          txt.id = 'triScore' + ax;
+          svg.appendChild(txt);
+        });
+      }
+      function updateTriangle() {
+        const a = ALGOS[state.selected];
+        const svg = document.getElementById('triSvg');
+        if (!document.getElementById('triDataPoly')) buildTriangleStatic(svg);
+        const vals = [a.scores.security, a.scores.decentralization, a.scores.scalability];
+        const pts = vals.map((v, i) => triPoint(i, v));
+        const poly = document.getElementById('triDataPoly');
+        poly.setAttribute('points', pts.map(p => p.x + ',' + p.y).join(' '));
+        poly.style.fill = COLORS[a.key];
+        poly.style.stroke = COLORS[a.key];
+
+        const anchors = ['middle', 'end', 'start'];
+        const labelDx = [0, -6, 6];
+        const labelDy = [-8, 14, 14];
+        pts.forEach((p, i) => {
+          const c = document.getElementById('triPoint' + i);
+          c.setAttribute('cx', p.x); c.setAttribute('cy', p.y);
+          c.style.fill = COLORS[a.key];
+          // score number sits just past the data point, well short of the fixed axis-name label
+          const lp = fullPoint(i, Math.min(vals[i] / 10 + 0.14, 1.18));
+          const txt = document.getElementById('triScore' + i);
+          txt.setAttribute('x', lp.x + labelDx[i]);
+          txt.setAttribute('y', lp.y + labelDy[i]);
+          txt.setAttribute('text-anchor', anchors[i]);
+          txt.style.fill = COLORS[a.key];
+          txt.textContent = vals[i] + '/10';
+        });
+      }
+
+      /* ---------------- score bars + stats + attack ---------------- */
+      function updateScores() {
+        const a = ALGOS[state.selected];
+        const wrap = document.getElementById('scoreBars');
+        wrap.innerHTML = '';
+        const rows = [
+          { label: 'Scalability', key: 'scalability' },
+          { label: 'Security', key: 'security' },
+          { label: 'Decentralisation', key: 'decentralization' }
+        ];
+        rows.forEach(r => {
+          const v = a.scores[r.key];
+          const div = document.createElement('div');
+          div.className = 'score-row';
+          div.innerHTML =
+            '<div class="score-row-head"><span class="label">' + r.label + '</span><span class="val">' + v + ' / 10</span></div>' +
+            '<div class="score-track"><div class="score-fill" style="width:' + (v * 10) + '%; --c:' + COLORS[a.key] + '"></div></div>' +
+            '<p class="score-note">' + a.scoreNotes[r.key] + '</p>';
+          wrap.appendChild(div);
+        });
+
+        const tiles = document.getElementById('statTiles');
+        tiles.innerHTML =
+          '<div class="stat-tile"><span class="n">' + a.stats.blockTime + '</span><span class="l">Block time</span></div>' +
+          '<div class="stat-tile"><span class="n">' + a.stats.tps + '</span><span class="l">Throughput</span></div>' +
+          '<div class="stat-tile"><span class="n">' + a.stats.finality + '</span><span class="l">Finality</span></div>';
+
+        const note = document.getElementById('attackNote');
+        note.style.setProperty('--c', COLORS[a.key]);
+        note.innerHTML = '<b>51% / Sybil resistance -</b> ' + a.attack;
+      }
+
+      /* ---------------- mapping cards + languages ---------------- */
+      function updateMapping() {
+        const a = ALGOS[state.selected];
+        const grid = document.getElementById('cardsGrid');
+        grid.innerHTML = '';
+        a.chains.forEach(c => {
+          const card = document.createElement('div');
+          card.className = 'chain-card';
+          card.style.setProperty('--c', COLORS[a.key]);
+          const layerClass = c.layer === 'L1' ? 'layer-l1' : 'layer-l2';
+          card.innerHTML =
+            '<div class="chain-card-head"><span class="chain-name">' + c.name + '</span><span class="chain-ticker">' + c.ticker + '</span></div>' +
+            '<div class="badge-row"><span class="badge ' + layerClass + '">' + c.layer + '</span><span class="badge">' + c.language + '</span></div>' +
+            '<p class="chain-why">' + c.why + '</p>';
+          grid.appendChild(card);
+        });
+
+        const pillsWrap = document.getElementById('langPills');
+        pillsWrap.innerHTML = '';
+        a.languages.forEach(l => {
+          const p = document.createElement('span');
+          p.className = 'lang-pill';
+          p.style.background = COLORS[a.key];
+          p.textContent = l;
+          pillsWrap.appendChild(p);
+        });
+        document.getElementById('langNote').textContent = a.languageNote;
+      }
+
+      /* ---------------- compatibility matrix ---------------- */
+      function pairInfo(a, b) {
+        if (a === b) return null;
+        const colorA = COLORS[a.algoKey], colorB = COLORS[b.algoKey];
+        if (a.algoKey === b.algoKey) {
+          return {
+            html: '<span class="rk">' + a.ticker + '</span> × <span class="rk2">' + b.ticker + '</span> - both run <b>' + a.algoName + '</b>. Compatible family: similar validator economics and finality assumptions. They are still separate networks though - moving assets between them still needs a bridge or a wrapped asset.',
+            ca: colorA, cb: colorA
+          };
+        }
+        return {
+          html: '<span class="rk">' + a.ticker + '</span> × <span class="rk2">' + b.ticker + '</span> - <b>' + a.algoShort + '</b> vs <b>' + b.algoShort + '</b>. Different consensus rules mean different finality guarantees and validator sets: neither chain can directly verify the other&rsquo;s blocks, so a trust-minimised bridge is required to move value between them.',
+          ca: colorA, cb: colorB
+        };
+      }
+
+      function buildMatrix() {
+        const grid = document.getElementById('matrixGrid');
+        grid.innerHTML = '';
+        const n = ALL_CHAINS.length;
+        grid.style.gridTemplateColumns = '220px repeat(' + n + ', 54px)';
+
+        // corner
+        const corner = document.createElement('div');
+        corner.className = 'mx-corner';
+        grid.appendChild(corner);
+
+        // column headers
+        ALL_CHAINS.forEach((c, ci) => {
+          const h = document.createElement('div');
+          h.className = 'mx-colhead' + (GROUP_START_IDX.includes(ci) ? ' group-t' : '');
+          h.textContent = c.ticker;
+          h.title = c.name + ' - ' + c.algoName;
+          grid.appendChild(h);
+        });
+
+        // rows
+        ALL_CHAINS.forEach((rowChain, ri) => {
+          const rh = document.createElement('div');
+          rh.className = 'mx-rowhead' + (GROUP_START_IDX.includes(ri) ? ' group-t' : '');
+          rh.innerHTML = '<b>' + rowChain.ticker + '</b>' + rowChain.name;
+          rh.title = rowChain.name + ' - ' + rowChain.algoName;
+          grid.appendChild(rh);
+
+          ALL_CHAINS.forEach((colChain, ci) => {
+            const cell = document.createElement('div');
+            cell.className = 'mx-cell' + (GROUP_START_IDX.includes(ci) ? ' group-l' : '');
+            cell.dataset.ri = ri; cell.dataset.ci = ci;
+            if (ri === ci) {
+              cell.classList.add('self');
+              cell.title = rowChain.name;
+            } else if (rowChain.algoKey === colChain.algoKey) {
+              cell.style.background = hexToRgba(COLORS[rowChain.algoKey], 0.30);
+              cell.title = rowChain.ticker + ' × ' + colChain.ticker + ' - compatible (' + rowChain.algoShort + ')';
+            } else {
+              cell.style.background = 'var(--surface)';
+              cell.title = rowChain.ticker + ' × ' + colChain.ticker + ' - incompatible (' + rowChain.algoShort + ' vs ' + colChain.algoShort + ')';
+            }
+            cell.addEventListener('click', () => {
+              const info = pairInfo(rowChain, colChain);
+              const box = document.getElementById('readout');
+              if (!info) {
+                box.innerHTML = rowChain.name + ' (' + rowChain.ticker + ') runs ' + rowChain.algoName + '.';
+              } else {
+                box.style.setProperty('--c-a', info.ca);
+                box.style.setProperty('--c-b', info.cb);
+                box.innerHTML = info.html;
+              }
+            });
+            grid.appendChild(cell);
+          });
+        });
+      }
+
+      function updateMatrixHighlight() {
+        const sel = state.selected;
+        document.querySelectorAll('.mx-cell').forEach(cell => {
+          const ri = +cell.dataset.ri, ci = +cell.dataset.ci;
+          const rowAlgo = ALL_CHAINS[ri].algoKey, colAlgo = ALL_CHAINS[ci].algoKey;
+          const involved = rowAlgo === sel || colAlgo === sel;
+          cell.classList.toggle('dim', !involved && !cell.classList.contains('self'));
+        });
+      }
+
+      function buildMatrixLegend() {
+        const wrap = document.getElementById('matrixLegend');
+        wrap.innerHTML = '';
+        ORDER.forEach(k => {
+          const item = document.createElement('span');
+          item.className = 'lg-item';
+          item.innerHTML = '<span class="lg-swatch" style="background:' + COLORS[k] + '"></span>' + ALGOS[k].short;
+          wrap.appendChild(item);
+        });
+        const diag = document.createElement('span');
+        diag.className = 'lg-item';
+        diag.innerHTML = '<span class="lg-swatch" style="background:var(--ink)"></span>same chain';
+        wrap.appendChild(diag);
+      }
+
+      /* ---------------- orchestration ---------------- */
+      function selectAlgo(key) {
+        state.selected = key;
+        state.phase = 0;
+        state.round = 0;
+        state.userPick = null;
+        state.height = 0;
+        state.lastHeightRound = -1;
+        document.getElementById('coreHeight').textContent = 'height 0';
+        updateChips();
+        updateOverview();
+        buildStage();
+        applyPhase();
+        updateTriangle();
+        updateScores();
+        updateMapping();
+        updateMatrixHighlight();
+      }
+
+      function init() {
+        buildChips();
+        buildMatrixLegend();
+        buildMatrix();
+        document.getElementById('prevBtn').addEventListener('click', () => goPhase(-1));
+        document.getElementById('nextBtn').addEventListener('click', () => goPhase(1));
+        document.getElementById('replayBtn').addEventListener('click', () => {
+          state.phase = 0; state.round++; state.userPick = null;
+          applyPhase();
+        });
+        selectAlgo('pow');
+      }
+
+      document.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
 </body>
+
 </html>
